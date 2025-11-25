@@ -1,0 +1,87 @@
+import { NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
+
+// POST /api/conversations/[id]/messages - Send a message
+export async function POST(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      )
+    }
+
+    const body = await req.json()
+    const { text } = body
+
+    if (!text || text.trim() === "") {
+      return NextResponse.json(
+        { error: "Message text is required" },
+        { status: 400 }
+      )
+    }
+
+    // Verify user is participant
+    const conversation = await prisma.conversation.findUnique({
+      where: { id: params.id },
+      include: {
+        participants: true,
+      },
+    })
+
+    if (!conversation) {
+      return NextResponse.json(
+        { error: "Conversation not found" },
+        { status: 404 }
+      )
+    }
+
+    const isParticipant = conversation.participants.some(
+      p => p.userId === session.user.id
+    )
+
+    if (!isParticipant) {
+      return NextResponse.json(
+        { error: "Forbidden" },
+        { status: 403 }
+      )
+    }
+
+    // Create message
+    const message = await prisma.message.create({
+      data: {
+        conversationId: params.id,
+        senderId: session.user.id,
+        text: text.trim(),
+      },
+      include: {
+        sender: {
+          include: {
+            profile: true,
+          },
+        },
+      },
+    })
+
+    // Update conversation timestamp
+    await prisma.conversation.update({
+      where: { id: params.id },
+      data: { updatedAt: new Date() },
+    })
+
+    return NextResponse.json({ message })
+  } catch (error) {
+    console.error("Error sending message:", error)
+    return NextResponse.json(
+      { error: "Failed to send message" },
+      { status: 500 }
+    )
+  }
+}

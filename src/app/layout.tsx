@@ -1,0 +1,74 @@
+import type { Metadata } from "next"
+import { Inter } from "next/font/google"
+import "./globals.css"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+
+const inter = Inter({ subsets: ["latin"] })
+
+export const metadata: Metadata = {
+  title: "Valkyries Seat Swap",
+  description: "Find and swap Golden State Valkyries tickets with other fans",
+}
+
+export default async function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const session = await getServerSession(authOptions)
+
+  return (
+    <html lang="en">
+      <body className={inter.className}>
+        <nav className="border-b">
+          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+            <Link href="/" className="text-xl font-bold">
+              Valkyries Seat Swap
+            </Link>
+            
+            <div className="flex items-center gap-4">
+              {session ? (
+                <>
+                  <Link href="/listings">
+                    <Button variant="ghost">Browse</Button>
+                  </Link>
+                  <Link href="/listings/new">
+                    <Button variant="ghost">Create Listing</Button>
+                  </Link>
+                  <Link href="/matches">
+                    <Button variant="ghost">Matches</Button>
+                  </Link>
+                  <Link href="/messages">
+                    <Button variant="ghost">Messages</Button>
+                  </Link>
+                  <Link href="/profile">
+                    <Button variant="ghost">Profile</Button>
+                  </Link>
+                  <form action="/api/auth/signout" method="post">
+                    <Button variant="outline" type="submit">Sign Out</Button>
+                  </form>
+                </>
+              ) : (
+                <>
+                  <Link href="/auth/signin">
+                    <Button variant="ghost">Sign In</Button>
+                  </Link>
+                  <Link href="/auth/signup">
+                    <Button>Sign Up</Button>
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        </nav>
+        
+        <main className="container mx-auto px-4 py-8">
+          {children}
+        </main>
+      </body>
+    </html>
+  )
+}

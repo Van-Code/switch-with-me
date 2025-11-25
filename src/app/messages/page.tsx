@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
-import { ConversationList } from "@/components/ConversationList"
+import { ConversationListItem } from "@/components/ConversationListItem"
 
 export default async function MessagesPage() {
   const session = await getServerSession(authOptions)
@@ -35,11 +35,13 @@ export default async function MessagesPage() {
         },
         take: 1,
       },
+      listing: true, // Include listing
     },
     orderBy: {
       updatedAt: "desc",
     },
   })
+
   // Serialize dates
   const serializedConversations = conversations.map(conv => ({
     ...conv,
@@ -62,7 +64,13 @@ export default async function MessagesPage() {
     messages: conv.messages.map(m => ({
       ...m,
       createdAt: m.createdAt.toISOString(),
-    }))
+    })),
+    listing: conv.listing ? {
+      ...conv.listing,
+      gameDate: conv.listing.gameDate.toISOString(),
+      createdAt: conv.listing.createdAt.toISOString(),
+      updatedAt: conv.listing.updatedAt.toISOString(),
+    } : null
   }))
 
   return (
@@ -72,7 +80,21 @@ export default async function MessagesPage() {
         <p className="text-muted-foreground">Your conversations</p>
       </div>
 
-      <ConversationList conversations={serializedConversations} currentUserId={session.user.id} />
+      {serializedConversations.length === 0 ? (
+        <div className="text-center py-8 text-muted-foreground">
+          No conversations yet. Start by messaging someone from a listing!
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {serializedConversations.map((conversation) => (
+            <ConversationListItem
+              key={conversation.id}
+              conversation={conversation}
+              currentUserId={session.user.id}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

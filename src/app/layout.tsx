@@ -35,6 +35,9 @@ export default async function RootLayout({
                   <Link href="/listings">
                     <Button variant="ghost">Browse</Button>
                   </Link>
+                  <Link href="/listings/map">
+                    <Button variant="ghost">Map View</Button>
+                  </Link>
                   <Link href="/listings/new">
                     <Button variant="ghost">Create Listing</Button>
                   </Link>

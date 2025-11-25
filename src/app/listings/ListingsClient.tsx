@@ -22,11 +22,14 @@ export function ListingsClient({ listings, currentUserId }: ListingsClientProps)
     setLoading(listing.id)
 
     try {
-      // Create or get conversation
+      // Create or get conversation WITH listingId
       const response = await fetch("/api/conversations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ otherUserId: listing.user.id }),
+        body: JSON.stringify({ 
+          otherUserId: listing.user.id,
+          listingId: listing.id // Pass the listing ID
+        }),
       })
 
       if (response.ok) {

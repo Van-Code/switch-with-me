@@ -39,6 +39,7 @@ export async function GET(req: Request) {
           },
           take: 1,
         },
+        listing: true, // Include listing data
       },
       orderBy: {
         updatedAt: "desc",
@@ -68,7 +69,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json()
-    const { otherUserId } = body
+    const { otherUserId, listingId } = body
 
     if (!otherUserId) {
       return NextResponse.json(
@@ -112,16 +113,43 @@ export async function POST(req: Request) {
             createdAt: "asc",
           },
         },
+        listing: true,
       },
     })
 
     if (existingConversation) {
+      // If a listingId is provided and conversation doesn't have one, update it
+      if (listingId && !existingConversation.listingId) {
+        const updatedConversation = await prisma.conversation.update({
+          where: { id: existingConversation.id },
+          data: { listingId },
+          include: {
+            participants: {
+              include: {
+                user: {
+                  include: {
+                    profile: true,
+                  },
+                },
+              },
+            },
+            messages: {
+              orderBy: {
+                createdAt: "asc",
+              },
+            },
+            listing: true,
+          },
+        })
+        return NextResponse.json({ conversation: updatedConversation })
+      }
       return NextResponse.json({ conversation: existingConversation })
     }
 
     // Create new conversation
     const conversation = await prisma.conversation.create({
       data: {
+        ...(listingId && { listingId }), // Only include if listingId exists
         participants: {
           create: [
             { userId: session.user.id },
@@ -140,6 +168,7 @@ export async function POST(req: Request) {
           },
         },
         messages: true,
+        listing: true,
       },
     })
 

@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { MessageThreadClient } from "./MessageThreadClient"
+import { ConversationListingHeader } from "@/components/ConversationListingHeader"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
@@ -38,6 +39,7 @@ export default async function ConversationPage({ params }: { params: { id: strin
           createdAt: "asc",
         },
       },
+      listing: true, // Include listing
     },
   })
 
@@ -74,6 +76,13 @@ export default async function ConversationPage({ params }: { params: { id: strin
     }
   }))
 
+  const serializedListing = conversation.listing ? {
+    ...conversation.listing,
+    gameDate: conversation.listing.gameDate.toISOString(),
+    createdAt: conversation.listing.createdAt.toISOString(),
+    updatedAt: conversation.listing.updatedAt.toISOString(),
+  } : null
+
   return (
     <div className="max-w-4xl mx-auto space-y-4">
       <div className="flex items-center gap-4">
@@ -92,6 +101,10 @@ export default async function ConversationPage({ params }: { params: { id: strin
         </div>
       </div>
 
+      {/* Listing Header */}
+      <ConversationListingHeader listing={serializedListing} />
+
+      {/* Messages */}
       <MessageThreadClient
         conversationId={conversation.id}
         initialMessages={serializedMessages}

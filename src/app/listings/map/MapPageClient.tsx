@@ -18,16 +18,19 @@ export function MapPageClient({ listings, currentUserId }: MapPageClientProps) {
       alert("This is your own listing!")
       return
     }
-
+  
     setLoading(listing.id)
-
+  
     try {
       const response = await fetch("/api/conversations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ otherUserId: listing.user.id }),
+        body: JSON.stringify({ 
+          otherUserId: listing.user.id,
+          listingId: listing.id // Pass listing ID
+        }),
       })
-
+  
       if (response.ok) {
         const { conversation } = await response.json()
         router.push(`/messages/${conversation.id}`)
@@ -41,7 +44,6 @@ export function MapPageClient({ listings, currentUserId }: MapPageClientProps) {
       setLoading(null)
     }
   }
-
   return (
     <ChaseCenterMap
       listings={listings}

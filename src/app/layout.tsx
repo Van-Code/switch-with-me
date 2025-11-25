@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { isSeatMapEnabled } from "@/lib/features"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -35,9 +36,11 @@ export default async function RootLayout({
                   <Link href="/listings">
                     <Button variant="ghost">Browse</Button>
                   </Link>
-                  <Link href="/listings/map">
-                    <Button variant="ghost">Map View</Button>
-                  </Link>
+                  {isSeatMapEnabled() && (
+                    <Link href="/listings/map">
+                      <Button variant="ghost">Map View</Button>
+                    </Link>
+                  )}
                   <Link href="/listings/new">
                     <Button variant="ghost">Create Listing</Button>
                   </Link>

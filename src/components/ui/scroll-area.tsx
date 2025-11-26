@@ -6,7 +6,9 @@ interface ScrollAreaProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode
 }
 
-const ScrollArea = React.forwardRef<HTMLDivElement, ScrollAreaProps>(
+const ScrollArea = React.forwardRef<
+React.ElementRef<typeof ScrollAreaPrimitive.Root>,
+React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root>>(
   function ScrollArea({ className, children, ...props }, ref) {
     return (
       <ScrollAreaPrimitive.Root
@@ -23,11 +25,10 @@ const ScrollArea = React.forwardRef<HTMLDivElement, ScrollAreaProps>(
   }
 )
 
-interface ScrollBarProps extends React.HTMLAttributes<HTMLDivElement> {
-  orientation?: "vertical" | "horizontal"
-}
 
-const ScrollBar = React.forwardRef<HTMLDivElement, ScrollBarProps>(
+const ScrollBar = React.forwardRef<
+  React.ElementRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>,
+  React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>>(
   function ScrollBar({ className, orientation = "vertical", ...props }, ref) {
     return (
       <ScrollAreaPrimitive.ScrollAreaScrollbar

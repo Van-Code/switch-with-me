@@ -18,5 +18,6 @@ React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>>(
     />
   )
 })
+Label.displayName = LabelPrimitive.Root.displayName
 
 export { Label }

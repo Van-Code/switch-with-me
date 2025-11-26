@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { Button } from "./ui/button"
 import { Textarea } from "./ui/textarea"
 import { Card, CardContent } from "./ui/card"
-import { useSocket } from "@/contexts/SocketContext"
+import { useSocket } from "../contexts/SocketContext"
 
 interface Message {
   id: string

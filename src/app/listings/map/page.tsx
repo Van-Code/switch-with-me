@@ -1,13 +1,13 @@
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { authOptions } from "../../../lib/auth"
 import { redirect } from "next/navigation"
-import { prisma } from "@/lib/prisma"
+import { prisma } from "../../../lib/prisma"
 import { MapPageClient } from "./MapPageClient"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import { Button } from "../../../components/ui/button"
 import { ArrowLeft, Grid3x3 } from "lucide-react"
-import { isSeatMapEnabled } from "@/lib/features"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { isSeatMapEnabled } from "../../../lib/features"
+import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card"
 
 export default async function MapPage() {
   const session = await getServerSession(authOptions)

@@ -1,8 +1,8 @@
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { authOptions } from "../../lib/auth"
 import { redirect } from "next/navigation"
-import { prisma } from "@/lib/prisma"
-import { ConversationListItem } from "@/components/ConversationListItem"
+import { prisma } from "../../lib/prisma"
+import { ConversationListItem } from "../../components/ConversationListItem"
 
 export default async function MessagesPage() {
   const session = await getServerSession(authOptions)

@@ -2,11 +2,11 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { authOptions } from "../lib/auth"
 import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { isSeatMapEnabled } from "@/lib/features"
-import { SocketProvider } from "@/contexts/SocketContext"
+import { Button } from "../components/ui/button"
+import { isSeatMapEnabled } from "../lib/features"
+import { SocketProvider } from "../contexts/SocketContext"
 
 const inter = Inter({ subsets: ["latin"] })
 

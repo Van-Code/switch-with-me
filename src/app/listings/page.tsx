@@ -1,12 +1,12 @@
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
-import { Button } from "@/components/ui/button"
+import { authOptions } from "../../lib//auth"
+import { prisma } from "../../lib//prisma"
+import { Button } from "../../components/ui/button"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { ListingsClient } from "./ListingsClient"
 import { Map } from "lucide-react"
-import { isSeatMapEnabled } from "@/lib/features"
+import { isSeatMapEnabled } from "../../lib//features"
 
 export default async function ListingsPage() {
   const session = await getServerSession(authOptions)

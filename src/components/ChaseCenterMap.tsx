@@ -4,7 +4,7 @@ import { useState, useCallback, useMemo } from "react"
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch"
 import { Button } from "./ui/button"
 import { ZoomIn, ZoomOut, Maximize2 } from "lucide-react"
-import { chaseCenterSections } from "@/lib/chase-center-sections"
+import { chaseCenterSections } from "../lib/chase-center-sections"
 import { ChaseCenterTooltip } from "./ChaseCenterTooltip"
 import { SectionListingsPanel } from "./SectionListingsPanel"
 

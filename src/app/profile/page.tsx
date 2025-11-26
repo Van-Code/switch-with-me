@@ -1,11 +1,11 @@
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { authOptions } from "../../lib/auth"
 import { redirect } from "next/navigation"
-import { prisma } from "@/lib/prisma"
-import { ProfileHeader } from "@/components/ProfileHeader"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { ListingCard } from "@/components/ListingCard"
+import { prisma } from "../../lib/prisma"
+import { ProfileHeader } from "../../components/ProfileHeader"
+import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card"
+import { Button } from "../../components/ui/button"
+import { ListingCard } from "../../components/ListingCard"
 import Link from "next/link"
 
 export default async function ProfilePage() {

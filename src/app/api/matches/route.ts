@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
-import { findMatches } from "@/lib/matching"
+import { authOptions } from "../../../lib/auth"
+import { prisma } from "../../../lib/prisma"
+import { findMatches } from "../../../lib/matching"
 
 // GET /api/matches - Get matches for current user's listings
 export async function GET(req: Request) {

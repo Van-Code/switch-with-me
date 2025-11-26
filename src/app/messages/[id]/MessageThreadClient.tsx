@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { MessageThread } from "@/components/MessageThread"
+import { MessageThread } from "../../../components/MessageThread"
 import { useRouter } from "next/navigation"
 
 interface Message {

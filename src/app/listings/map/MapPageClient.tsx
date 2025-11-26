@@ -1,6 +1,6 @@
 "use client"
 
-import { ChaseCenterMap } from "@/components/ChaseCenterMap"
+import { ChaseCenterMap } from "../../../components/ChaseCenterMap"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 

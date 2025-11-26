@@ -26,7 +26,7 @@ export function ListingsClient({ listings, currentUserId }: ListingsClientProps)
       const response = await fetch("/api/conversations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           otherUserId: listing.user.id,
           listingId: listing.id // Pass the listing ID
         }),

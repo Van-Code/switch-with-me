@@ -7,9 +7,10 @@ const Select = SelectPrimitive.Root
 const SelectGroup = SelectPrimitive.Group
 const SelectValue = SelectPrimitive.Value
 
-const SelectTrigger = React.forwardRef
-  HTMLButtonElement,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>(function SelectTrigger({ className, children, ...props }, ref) {
+const SelectTrigger = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Root>>(
+    function SelectTrigger({ className, children, ...props }, ref) {
   return (
     <SelectPrimitive.Trigger
       ref={ref}
@@ -27,9 +28,10 @@ const SelectTrigger = React.forwardRef
   )
 })
 
-const SelectScrollUpButton = React.forwardRef
-  HTMLDivElement,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollUpButton>(function SelectScrollUpButton({ className, ...props }, ref) {
+const SelectScrollUpButton = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.ScrollUpButton>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollUpButton>>(
+    function SelectScrollUpButton({ className, ...props }, ref) {
   return (
     <SelectPrimitive.ScrollUpButton
       ref={ref}
@@ -44,9 +46,10 @@ const SelectScrollUpButton = React.forwardRef
   )
 })
 
-const SelectScrollDownButton = React.forwardRef
-  HTMLDivElement,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollDownButton>(function SelectScrollDownButton({ className, ...props }, ref) {
+const SelectScrollDownButton = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.ScrollDownButton>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollDownButton>>(
+    function SelectScrollDownButton({ className, ...props }, ref) {
   return (
     <SelectPrimitive.ScrollDownButton
       ref={ref}
@@ -61,9 +64,10 @@ const SelectScrollDownButton = React.forwardRef
   )
 })
 
-const SelectContent = React.forwardRef
-  HTMLDivElement,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>(function SelectContent({ className, children, position = "popper", ...props }, ref) {
+const SelectContent = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>>(
+    function SelectContent({ className, children, position = "popper", ...props }, ref) {
   return (
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content
@@ -93,9 +97,10 @@ const SelectContent = React.forwardRef
   )
 })
 
-const SelectLabel = React.forwardRef
-  HTMLDivElement,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Label>(function SelectLabel({ className, ...props }, ref) {
+const SelectLabel = React.forwardRef<
+React.ElementRef<typeof SelectPrimitive.Label>,
+React.ComponentPropsWithoutRef<typeof SelectPrimitive.Label>>(
+  function SelectLabel({ className, ...props }, ref) {
   return (
     <SelectPrimitive.Label
       ref={ref}
@@ -105,9 +110,10 @@ const SelectLabel = React.forwardRef
   )
 })
 
-const SelectItem = React.forwardRef
-  HTMLDivElement,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>(function SelectItem({ className, children, ...props }, ref) {
+const SelectItem = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Item>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>>(
+  function SelectItem({ className, children, ...props }, ref) {
   return (
     <SelectPrimitive.Item
       ref={ref}
@@ -127,9 +133,10 @@ const SelectItem = React.forwardRef
   )
 })
 
-const SelectSeparator = React.forwardRef
-  HTMLDivElement,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Separator>(function SelectSeparator({ className, ...props }, ref) {
+const SelectSeparator = React.forwardRef<
+React.ElementRef<typeof SelectPrimitive.Separator>,
+React.ComponentPropsWithoutRef<typeof SelectPrimitive.Separator>>(
+  function SelectSeparator({ className, ...props }, ref) {
   return (
     <SelectPrimitive.Separator
       ref={ref}

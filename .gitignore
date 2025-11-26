@@ -10,3 +10,4 @@ coverage/
 prisma/
 .next/
 package-lock.json
+src_bk/

@@ -6,6 +6,7 @@ import { authOptions } from "@/lib/auth"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { isSeatMapEnabled } from "@/lib/features"
+import { SocketProvider } from "@/contexts/SocketContext"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -24,56 +25,59 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <nav className="border-b">
-          <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-            <Link href="/" className="text-xl font-bold">
-              Valkyries Seat Swap
-            </Link>
-            
-            <div className="flex items-center gap-4">
-              {session ? (
-                <>
-                  <Link href="/listings">
-                    <Button variant="ghost">Browse</Button>
-                  </Link>
-                  {isSeatMapEnabled() && (
+        <SocketProvider>
+          <nav className="border-b">
+            <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+              <Link href="/" className="text-xl font-bold">
+                Valkyries Seat Swap
+              </Link>
+              
+              <div className="flex items-center gap-4">
+                {session ? (
+                  <>
+                    <Link href="/listings">
+                      <Button variant="ghost">Browse</Button>
+                    </Link>
+                    {isSeatMapEnabled() && (
+
                     <Link href="/listings/map">
                       <Button variant="ghost">Map View</Button>
+                      </Link>
+                    )}
+                    <Link href="/listings/new">
+                      <Button variant="ghost">Create Listing</Button>
                     </Link>
-                  )}
-                  <Link href="/listings/new">
-                    <Button variant="ghost">Create Listing</Button>
-                  </Link>
-                  <Link href="/matches">
-                    <Button variant="ghost">Matches</Button>
-                  </Link>
-                  <Link href="/messages">
-                    <Button variant="ghost">Messages</Button>
-                  </Link>
-                  <Link href="/profile">
-                    <Button variant="ghost">Profile</Button>
-                  </Link>
-                  <form action="/api/auth/signout" method="post">
-                    <Button variant="outline" type="submit">Sign Out</Button>
-                  </form>
-                </>
-              ) : (
-                <>
-                  <Link href="/auth/signin">
-                    <Button variant="ghost">Sign In</Button>
-                  </Link>
-                  <Link href="/auth/signup">
-                    <Button>Sign Up</Button>
-                  </Link>
-                </>
-              )}
+                    <Link href="/matches">
+                      <Button variant="ghost">Matches</Button>
+                    </Link>
+                    <Link href="/messages">
+                      <Button variant="ghost">Messages</Button>
+                    </Link>
+                    <Link href="/profile">
+                      <Button variant="ghost">Profile</Button>
+                    </Link>
+                    <form action="/api/auth/signout" method="post">
+                      <Button variant="outline" type="submit">Sign Out</Button>
+                    </form>
+                  </>
+                ) : (
+                  <>
+                    <Link href="/auth/signin">
+                      <Button variant="ghost">Sign In</Button>
+                    </Link>
+                    <Link href="/auth/signup">
+                      <Button>Sign Up</Button>
+                    </Link>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        </nav>
-        
-        <main className="container mx-auto px-4 py-8">
-          {children}
-        </main>
+          </nav>
+          
+          <main className="container mx-auto px-4 py-8">
+            {children}
+          </main>
+        </SocketProvider>
       </body>
     </html>
   )

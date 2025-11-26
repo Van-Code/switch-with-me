@@ -3,7 +3,6 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
-// POST /api/conversations/[id]/messages - Send a message
 export async function POST(
   req: Request,
   { params }: { params: { id: string } }
@@ -75,6 +74,22 @@ export async function POST(
       where: { id: params.id },
       data: { updatedAt: new Date() },
     })
+
+    // Emit socket event to all clients in the conversation room
+    if (global.io) {
+      global.io.to(`conversation:${params.id}`).emit("new-message", {
+        id: message.id,
+        text: message.text,
+        createdAt: message.createdAt.toISOString(),
+        sender: {
+          id: message.sender.id,
+          profile: message.sender.profile ? {
+            firstName: message.sender.profile.firstName,
+            lastInitial: message.sender.profile.lastInitial,
+          } : null,
+        },
+      })
+    }
 
     return NextResponse.json({ message })
   } catch (error) {

@@ -29,7 +29,6 @@ export function MessageThreadClient({
   currentUserId,
 }: MessageThreadClientProps) {
   const router = useRouter()
-  const [messages, setMessages] = useState(initialMessages)
 
   const handleSendMessage = async (text: string) => {
     const response = await fetch(`/api/conversations/${conversationId}/messages`, {
@@ -38,11 +37,7 @@ export function MessageThreadClient({
       body: JSON.stringify({ text }),
     })
 
-    if (response.ok) {
-      const { message } = await response.json()
-      setMessages([...messages, message])
-      router.refresh()
-    } else {
+    if (!response.ok) {
       throw new Error("Failed to send message")
     }
   }
@@ -50,7 +45,7 @@ export function MessageThreadClient({
   return (
     <MessageThread
       conversationId={conversationId}
-      messages={messages}
+      messages={initialMessages}
       currentUserId={currentUserId}
       onSendMessage={handleSendMessage}
     />

@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "./ui/button"
+import { Textarea } from "./ui/textarea"
+import { Card, CardContent } from "./ui/card"
+import { useSocket } from "@/contexts/SocketContext"
 
 interface Message {
   id: string
@@ -27,13 +28,18 @@ interface MessageThreadProps {
 
 export function MessageThread({
   conversationId,
-  messages,
+  messages: initialMessages,
   currentUserId,
   onSendMessage,
 }: MessageThreadProps) {
+  const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [newMessage, setNewMessage] = useState("")
   const [sending, setSending] = useState(false)
+  const [typingUsers, setTypingUsers] = useState<Set<string>>(new Set())
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const typingTimeoutRef = useRef<NodeJS.Timeout>()
+  
+  const { socket, isConnected } = useSocket()
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -43,6 +49,75 @@ export function MessageThread({
     scrollToBottom()
   }, [messages])
 
+  // Socket event listeners
+  useEffect(() => {
+    if (!socket) return
+
+    // Join conversation room
+    socket.emit("join-conversation", conversationId)
+
+    // Listen for new messages
+    socket.on("new-message", (message: Message) => {
+      setMessages((prev) => {
+        // Avoid duplicates
+        if (prev.some(m => m.id === message.id)) {
+          return prev
+        }
+        return [...prev, message]
+      })
+    })
+
+    // Listen for typing indicators
+    socket.on("user-typing", ({ userId, isTyping }: { userId: string, isTyping: boolean }) => {
+      if (userId === currentUserId) return
+      
+      setTypingUsers((prev) => {
+        const updated = new Set(prev)
+        if (isTyping) {
+          updated.add(userId)
+        } else {
+          updated.delete(userId)
+        }
+        return updated
+      })
+    })
+
+    return () => {
+      socket.emit("leave-conversation", conversationId)
+      socket.off("new-message")
+      socket.off("user-typing")
+    }
+  }, [socket, conversationId, currentUserId])
+
+  const handleTyping = (text: string) => {
+    setNewMessage(text)
+
+    if (!socket) return
+
+    // Emit typing event
+    socket.emit("typing", {
+      conversationId,
+      userId: currentUserId,
+      isTyping: text.length > 0,
+    })
+
+    // Clear previous timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current)
+    }
+
+    // Stop typing after 2 seconds of inactivity
+    if (text.length > 0) {
+      typingTimeoutRef.current = setTimeout(() => {
+        socket.emit("typing", {
+          conversationId,
+          userId: currentUserId,
+          isTyping: false,
+        })
+      }, 2000)
+    }
+  }
+
   const handleSend = async () => {
     if (!newMessage.trim() || sending) return
 
@@ -50,6 +125,15 @@ export function MessageThread({
     try {
       await onSendMessage(newMessage)
       setNewMessage("")
+      
+      // Stop typing indicator
+      if (socket) {
+        socket.emit("typing", {
+          conversationId,
+          userId: currentUserId,
+          isTyping: false,
+        })
+      }
     } catch (error) {
       console.error("Failed to send message:", error)
     } finally {
@@ -66,6 +150,13 @@ export function MessageThread({
 
   return (
     <div className="flex flex-col h-[600px]">
+      {/* Connection Status */}
+      {!isConnected && (
+        <div className="bg-yellow-500/10 text-yellow-700 text-xs px-3 py-2 text-center">
+          Reconnecting...
+        </div>
+      )}
+
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message) => {
           const isOwnMessage = message.sender.id === currentUserId
@@ -97,18 +188,25 @@ export function MessageThread({
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Typing Indicator */}
+      {typingUsers.size > 0 && (
+        <div className="px-4 py-2 text-sm text-muted-foreground italic">
+          Someone is typing...
+        </div>
+      )}
+
       <div className="border-t p-4">
         <div className="flex gap-2">
           <Textarea
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={(e) => handleTyping(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Type a message..."
             className="resize-none"
             rows={2}
           />
           <Button onClick={handleSend} disabled={sending || !newMessage.trim()}>
-            Send
+            {sending ? "..." : "Send"}
           </Button>
         </div>
       </div>

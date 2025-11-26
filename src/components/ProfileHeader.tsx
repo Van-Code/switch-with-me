@@ -8,7 +8,8 @@ interface ProfileHeaderProps {
   emailVerified?: boolean
   phoneVerified?: boolean
   seasonTicketHolderVerified?: boolean
-  successfulSwapsCount?: number
+  successfulSwapsCount?: number,
+  favoritePlayer:string | null
 }
 
 export function ProfileHeader({

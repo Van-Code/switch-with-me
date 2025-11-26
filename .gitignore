@@ -9,3 +9,4 @@ coverage/
 .idea/
 prisma/
 .next/
+.package-lock.json

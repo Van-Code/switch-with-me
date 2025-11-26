@@ -2,10 +2,11 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { Button } from "@/components/ui/button"
-import { Map } from "lucide-react"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { ListingsClient } from "./ListingsClient"
+import { Map } from "lucide-react"
+import { isSeatMapEnabled } from "@/lib/features"
 
 export default async function ListingsPage() {
   const session = await getServerSession(authOptions)
@@ -50,23 +51,25 @@ export default async function ListingsPage() {
 
   return (
     <div className="space-y-6">
-     <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center">
         <div>
-            <h1 className="text-3xl font-bold">Browse Listings</h1>
-            <p className="text-muted-foreground">Find tickets to swap</p>
+          <h1 className="text-3xl font-bold">Browse Listings</h1>
+          <p className="text-muted-foreground">Find tickets to swap</p>
         </div>
         <div className="flex gap-2">
+          {isSeatMapEnabled() && (
             <Link href="/listings/map">
-            <Button variant="outline">
+              <Button variant="outline">
                 <Map className="h-4 w-4 mr-2" />
                 Map View
-            </Button>
+              </Button>
             </Link>
-            <Link href="/listings/new">
+          )}
+          <Link href="/listings/new">
             <Button>Create Listing</Button>
-            </Link>
+          </Link>
         </div>
-        </div>
+      </div>
 
       {serializedListings.length === 0 ? (
         <div className="text-center py-12">

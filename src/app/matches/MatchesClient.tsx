@@ -35,16 +35,19 @@ export function MatchesClient({ currentUserId }: MatchesClientProps) {
     }
   }
 
-  const handleMessageOwner = async (otherUserId: string) => {
+  const handleMessageOwner = async (otherUserId: string, listingId: string) => {
     setMessagingLoading(otherUserId)
-
+  
     try {
       const response = await fetch("/api/conversations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ otherUserId }),
+        body: JSON.stringify({ 
+          otherUserId,
+          listingId // Pass the listing ID
+        }),
       })
-
+  
       if (response.ok) {
         const { conversation } = await response.json()
         router.push(`/messages/${conversation.id}`)
@@ -110,13 +113,16 @@ export function MatchesClient({ currentUserId }: MatchesClientProps) {
                   </div>
                 </div>
                 <div className="mt-4">
-                  <Button 
-                    className="w-full"
-                    onClick={() => handleMessageOwner(match.matchedListing.user.id)}
-                    disabled={messagingLoading === match.matchedListing.user.id}
-                  >
-                    {messagingLoading === match.matchedListing.user.id ? "Opening..." : "Message Owner"}
-                  </Button>
+                <Button 
+                  className="w-full"
+                  onClick={() => handleMessageOwner(
+                    match.matchedListing.user.id,
+                    match.matchedListing.id // Pass listing ID
+                  )}
+                  disabled={messagingLoading === match.matchedListing.user.id}
+                >
+                  {messagingLoading === match.matchedListing.user.id ? "Opening..." : "Message Owner"}
+                </Button>
                 </div>
               </CardContent>
             </Card>

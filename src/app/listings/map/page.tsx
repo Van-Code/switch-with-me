@@ -6,12 +6,38 @@ import { MapPageClient } from "./MapPageClient"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Grid3x3 } from "lucide-react"
+import { isSeatMapEnabled } from "@/lib/features"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default async function MapPage() {
   const session = await getServerSession(authOptions)
   
   if (!session?.user?.id) {
     redirect("/auth/signin")
+  }
+
+  // Check if seat map feature is enabled
+  if (!isSeatMapEnabled()) {
+    return (
+      <div className="max-w-2xl mx-auto mt-12">
+        <Card>
+          <CardHeader>
+            <CardTitle>Seat Map View Disabled</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground">
+              The interactive seat map view is currently disabled. Please use the grid view to browse available listings.
+            </p>
+            <Link href="/listings">
+              <Button className="w-full">
+                <Grid3x3 className="h-4 w-4 mr-2" />
+                Go to Grid View
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   const listings = await prisma.listing.findMany({

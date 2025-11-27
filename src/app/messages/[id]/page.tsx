@@ -49,7 +49,7 @@ export default async function ConversationPage({ params }: { params: { id: strin
 
   // Check if user is participant
   const isParticipant = conversation.participants.some(
-    p => p.userId === session.user.id
+    (p:{userId:string}) => p.userId === session.user.id
   )
 
   if (!isParticipant) {
@@ -57,11 +57,11 @@ export default async function ConversationPage({ params }: { params: { id: strin
   }
 
   const otherParticipant = conversation.participants.find(
-    p => p.userId !== session.user.id
+    (p:{userId:string})  => p.userId !== session.user.id
   )
 
   // Serialize dates
-  const serializedMessages = conversation.messages.map(m => ({
+  const serializedMessages = conversation.messages.map((m:any) => ({
     ...m,
     createdAt: m.createdAt.toISOString(),
     sender: {

@@ -56,11 +56,11 @@ export function ChaseCenterMap({ listings, onMessageOwner, currentUserId }: Chas
   }
 
   const hoveredSectionData = hoveredSection
-    ? chaseCenterSections.find(s => s.number === hoveredSection)
+    ? chaseCenterSections.find((s:{number:string}) => s.number === hoveredSection)
     : null
 
   const selectedSectionData = selectedSection
-    ? chaseCenterSections.find(s => s.number === selectedSection)
+    ? chaseCenterSections.find((s:{number:string}) => s.number === selectedSection)
     : null
 
   return (

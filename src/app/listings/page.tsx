@@ -32,7 +32,7 @@ export default async function ListingsPage() {
   })
 
   // Serialize dates to strings
-  const serializedListings = listings.map(listing => ({
+  const serializedListings = listings.map((listing:any)=> ({
     ...listing,
     gameDate: listing.gameDate.toISOString(),
     createdAt: listing.createdAt.toISOString(),

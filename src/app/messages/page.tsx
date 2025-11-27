@@ -43,11 +43,12 @@ export default async function MessagesPage() {
   })
 
   // Serialize dates
+  // @ts-ignore
   const serializedConversations = conversations.map(conv => ({
     ...conv,
     createdAt: conv.createdAt.toISOString(),
     updatedAt: conv.updatedAt.toISOString(),
-    participants: conv.participants.map(p => ({
+    participants: conv.participants.map((p:any) => ({
       ...p,
       createdAt: p.createdAt.toISOString(),
       user: {
@@ -61,7 +62,7 @@ export default async function MessagesPage() {
         } : null
       }
     })),
-    messages: conv.messages.map(m => ({
+    messages: conv.messages.map((m:any) => ({
       ...m,
       createdAt: m.createdAt.toISOString(),
     })),
@@ -86,7 +87,7 @@ export default async function MessagesPage() {
         </div>
       ) : (
         <div className="space-y-2">
-          {serializedConversations.map((conversation) => (
+          {serializedConversations.map((conversation:any) => (
             <ConversationListItem
               key={conversation.id}
               conversation={conversation}

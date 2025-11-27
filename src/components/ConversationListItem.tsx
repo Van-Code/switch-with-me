@@ -34,7 +34,7 @@ interface ConversationListItemProps {
 
 export function ConversationListItem({ conversation, currentUserId }: ConversationListItemProps) {
   const otherParticipant = conversation.participants.find(
-    p => p.user.id !== currentUserId
+    (p:any) => p.user.id !== currentUserId
   )
   const lastMessage = conversation.messages[0]
   

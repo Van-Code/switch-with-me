@@ -1,5 +1,13 @@
-import { Listing } from "@prisma/client"
-
+export type Listing = {
+  id: string;
+  gameDate: Date,
+  haveZone: string,
+  wantZones: string[],
+  haveSection:string,
+  wantSections: string[],
+  status: string,
+  faceValue:number
+};
 export interface MatchScore {
   listingId: string
   score: number

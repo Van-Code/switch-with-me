@@ -32,9 +32,9 @@ export default async function ProfilePage() {
     redirect("/auth/signin")
   }
 
-  const activeListings = user.listings.filter(l => l.status === "ACTIVE")
-  const inactiveListings = user.listings.filter(l => l.status === "INACTIVE")
-  const matchedListings = user.listings.filter(l => l.status === "MATCHED")
+  const activeListings = user.listings.filter((l:{status:string}) => l.status === "ACTIVE")
+  const inactiveListings = user.listings.filter((l:{status:string}) => l.status === "INACTIVE")
+  const matchedListings = user.listings.filter((l:{status:string}) => l.status === "MATCHED")
 
   return (
     <div className="space-y-8">
@@ -127,7 +127,7 @@ function MyListingsSection({
           </Card>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {activeListings.map((listing) => (
+            {activeListings.map((listing:any) => (
               <MyListingCard key={listing.id} listing={listing} />
             ))}
           </div>
@@ -139,7 +139,7 @@ function MyListingsSection({
         <div className="space-y-4">
           <h2 className="text-2xl font-bold">Inactive Listings</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {inactiveListings.map((listing) => (
+            {inactiveListings.map((listing:any) => (
               <MyListingCard key={listing.id} listing={listing} />
             ))}
           </div>
@@ -151,7 +151,7 @@ function MyListingsSection({
         <div className="space-y-4">
           <h2 className="text-2xl font-bold">Completed Swaps</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {matchedListings.map((listing) => (
+            {matchedListings.map((listing:any) => (
               <MyListingCard key={listing.id} listing={listing} />
             ))}
           </div>

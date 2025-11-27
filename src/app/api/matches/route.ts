@@ -49,7 +49,7 @@ export async function GET(req: Request) {
       const matches = findMatches(myListing, allListings)
       
       for (const match of matches) {
-        const matchedListing = allListings.find(l => l.id === match.listingId)
+        const matchedListing = allListings.find((l:any) => l.id === match.listingId)
         if (matchedListing) {
           matchResults.push({
             myListing,

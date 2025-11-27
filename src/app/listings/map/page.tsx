@@ -55,9 +55,10 @@ export default async function MapPage() {
       createdAt: "desc",
     },
   })
-
+  
+  
   // Serialize dates
-  const serializedListings = listings.map(listing => ({
+  const serializedListings = listings.map((listing:any) => ({
     ...listing,
     gameDate: listing.gameDate.toISOString(),
     createdAt: listing.createdAt.toISOString(),

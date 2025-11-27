@@ -55,7 +55,7 @@ export async function GET(
 
     // Check if user is a participant
     const isParticipant = conversation.participants.some(
-      p => p.userId === session.user.id
+      (p: {userId: string}) => p.userId === session.user.id
     )
 
     if (!isParticipant) {

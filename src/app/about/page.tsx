@@ -2,6 +2,7 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card"
 import {Button} from "@/components/ui/button"
 import Image from "next/image"
 import { Heart } from "lucide-react"
+import ContactForm from "@/components/contact-form"
 
 
 export default function AboutPage() {
@@ -72,41 +73,61 @@ export default function AboutPage() {
         </CardContent>
       
       </Card>
-      <div  className="space-y-6">
-        <form
+      {/* Support Section */}
+      <Card className="bg-gradient-to-br from-rose-50/50 to-purple-50/50 border-rose-200/30">
+        <CardHeader>
+          <h2 className="text-2xl font-semibold text-center">Support the Project</h2>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <form
             action="https://www.paypal.com/donate"
             method="post"
             target="_top"
             className="flex justify-center"
-            >
+          >
             <input type="hidden" name="business" value="YOUR_PAYPAL_EMAIL" />
             <input type="hidden" name="no_recurring" value="0" />
             <input
-                type="hidden"
-                name="item_name"
-                value="Support Golden State Valkyries Ticket Swap"
+              type="hidden"
+              name="item_name"
+              value="Support Golden State Valkyries Ticket Swap"
             />
             <input type="hidden" name="currency_code" value="USD" />
             <Button
-                type="submit"
-                size="lg"
-                className="bg-rose-600 hover:bg-rose-700 text-white shadow-md"
+              type="submit"
+              size="lg"
+              className="bg-rose-600 hover:bg-rose-700 text-white shadow-md"
             >
-                <Heart className="mr-2 h-5 w-5" />
-                Donate via PayPal
+              <Heart className="mr-2 h-5 w-5" />
+              Donate via PayPal
             </Button>
-        </form>
-        <div className="text-center">
+          </form>
+          <div className="text-center">
             <Button
-            variant="outline"
-            size="sm"
-            className="text-amber-700 border-amber-300 hover:bg-amber-50 "
-            asChild
+              variant="outline"
+              size="sm"
+              className="text-amber-700 border-amber-300 hover:bg-amber-50"
+              asChild
             >
-            <a href="mailto:youremail@example.com">Sponsor or Partner</a>
+              <a href="mailto:youremail@example.com">Sponsor or Partner</a>
             </Button>
-        </div>
-        </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Contact Section */}
+      <Card className="bg-muted/30 border-purple-300/20">
+        <CardHeader>
+          <h2 className="text-2xl font-semibold">Get in Touch</h2>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-muted-foreground">
+            Have feedback, questions, or ideas for collaboration? Want to discuss sponsorship
+            opportunities or just say hi? I'd love to hear from you!
+          </p>
+          <ContactForm />
+        </CardContent>
+      </Card>
     </div>
   )
 }

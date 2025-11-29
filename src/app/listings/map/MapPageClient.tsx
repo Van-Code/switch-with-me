@@ -6,7 +6,7 @@ import { useState } from "react"
 
 interface MapPageClientProps {
   listings: any[]
-  currentUserId: string
+  currentUserId?: string
 }
 
 export function MapPageClient({ listings, currentUserId }: MapPageClientProps) {

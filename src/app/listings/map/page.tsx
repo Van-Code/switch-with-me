@@ -11,10 +11,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui
 
 export default async function MapPage() {
   const session = await getServerSession(authOptions)
-  
-  if (!session?.user?.id) {
-    redirect("/auth/signin")
-  }
 
   // Check if seat map feature is enabled
   if (!isSeatMapEnabled()) {
@@ -46,8 +42,8 @@ export default async function MapPage() {
     },
     include: {
       user: {
-        include: {
-          profile: true,
+        select: {
+          id: true,
         },
       },
     },
@@ -55,8 +51,8 @@ export default async function MapPage() {
       createdAt: "desc",
     },
   })
-  
-  
+
+
   // Serialize dates
   const serializedListings = listings.map((listing:any) => ({
     ...listing,
@@ -65,13 +61,6 @@ export default async function MapPage() {
     updatedAt: listing.updatedAt.toISOString(),
     user: listing.user ? {
       ...listing.user,
-      createdAt: listing.user.createdAt.toISOString(),
-      updatedAt: listing.user.updatedAt.toISOString(),
-      profile: listing.user.profile ? {
-        ...listing.user.profile,
-        createdAt: listing.user.profile.createdAt.toISOString(),
-        updatedAt: listing.user.profile.updatedAt.toISOString(),
-      } : null
     } : undefined
   }))
 
@@ -101,7 +90,7 @@ export default async function MapPage() {
 
       <MapPageClient
         listings={serializedListings}
-        currentUserId={session.user.id}
+        currentUserId={session?.user?.id}
       />
     </div>
   )

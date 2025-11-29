@@ -11,10 +11,6 @@ import { isSeatMapEnabled } from "../../lib//features"
 
 export default async function ListingsPage() {
   const session = await getServerSession(authOptions)
-  
-  if (!session) {
-    redirect("/auth/signin")
-  }
 
   const listings = await prisma.listing.findMany({
     where: {
@@ -22,8 +18,8 @@ export default async function ListingsPage() {
     },
     include: {
       user: {
-        include: {
-          profile: true,
+        select: {
+          id: true,
         },
       },
     },
@@ -40,13 +36,6 @@ export default async function ListingsPage() {
     updatedAt: listing.updatedAt.toISOString(),
     user: listing.user ? {
       ...listing.user,
-      createdAt: listing.user.createdAt.toISOString(),
-      updatedAt: listing.user.updatedAt.toISOString(),
-      profile: listing.user.profile ? {
-        ...listing.user.profile,
-        createdAt: listing.user.profile.createdAt.toISOString(),
-        updatedAt: listing.user.profile.updatedAt.toISOString(),
-      } : null
     } : undefined
   }))
 
@@ -80,7 +69,7 @@ export default async function ListingsPage() {
           </Link>
         </div>
       ) : (
-        <ListingsClient listings={serializedListings} currentUserId={session.user.id} />
+        <ListingsClient listings={serializedListings} currentUserId={session?.user?.id} />
       )}
     </div>
   )

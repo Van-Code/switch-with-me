@@ -120,7 +120,7 @@ export default function ListingsFilters({
     Object.entries(updates).forEach(([key, value]) => {
       if (value && value.trim() !== "") {
         params.set(key, value);
-      } else {t
+      } else {
         params.delete(key);
       }
     });

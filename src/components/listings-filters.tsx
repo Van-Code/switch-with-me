@@ -56,13 +56,11 @@ export default function ListingsFilters({
     setSearchValue(currentSearch ?? "");
   }, [currentSearch]);
 
-  // Auto-fill toDate when fromDate changes
+  // Auto-sync toDate when fromDate becomes later than toDate
   useEffect(() => {
-    if (fromDate && !toDate) {
-      // If toDate is empty, set it to fromDate
-      setToDate(fromDate);
-    } else if (fromDate && toDate && fromDate > toDate) {
-      // If fromDate is later than toDate, update toDate to match fromDate
+    // Only update toDate if fromDate is later than current toDate
+    // Don't auto-fill toDate when it's empty - let user choose
+    if (fromDate && toDate && fromDate > toDate) {
       setToDate(fromDate);
     }
   }, [fromDate, toDate]);
@@ -353,9 +351,8 @@ export default function ListingsFilters({
                 type="date"
                 value={toDate}
                 onChange={(e) => setToDate(e.target.value)}
-                disabled={!fromDate}
                 min={fromDate || today}
-                className="text-sm border-cyan-200 focus:border-cyan-400 focus:ring-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="text-sm border-cyan-200 focus:border-cyan-400 focus:ring-cyan-400"
               />
             </div>
           </div>

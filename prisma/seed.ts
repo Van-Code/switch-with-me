@@ -15,7 +15,26 @@ async function main() {
   await prisma.listing.deleteMany()
   await prisma.profile.deleteMany()
   await prisma.user.deleteMany()
+  await prisma.team.deleteMany()
   console.log('✅ Cleanup complete')
+
+  // Create teams
+  console.log('Creating teams...')
+  const bayfc = await prisma.team.create({
+    data: {
+      name: 'Bay FC',
+      slug: 'bayfc',
+    },
+  })
+
+  const valkyries = await prisma.team.create({
+    data: {
+      name: 'Valkyries',
+      slug: 'valkyries',
+    },
+  })
+
+  console.log('Teams created')
 
   // Create test users
   const password = await bcrypt.hash('password123', 10)
@@ -85,6 +104,7 @@ async function main() {
   const listing1 = await prisma.listing.create({
     data: {
       userId: user1.id,
+      teamId: bayfc.id,
       gameDate: gameDate1,
       haveSection: '101',
       haveRow: 'A',
@@ -101,6 +121,7 @@ async function main() {
   const listing2 = await prisma.listing.create({
     data: {
       userId: user2.id,
+      teamId: valkyries.id,
       gameDate: gameDate1,
       haveSection: '106',
       haveRow: 'C',
@@ -117,6 +138,7 @@ async function main() {
   await prisma.listing.create({
     data: {
       userId: user3.id,
+      teamId: bayfc.id,
       gameDate: gameDate1,
       haveSection: '215',
       haveRow: 'F',
@@ -133,6 +155,7 @@ async function main() {
   await prisma.listing.create({
     data: {
       userId: user1.id,
+      teamId: valkyries.id,
       gameDate: gameDate2,
       haveSection: '103',
       haveRow: 'B',
@@ -149,6 +172,7 @@ async function main() {
   await prisma.listing.create({
     data: {
       userId: user2.id,
+      teamId: bayfc.id,
       gameDate: gameDate2,
       haveSection: '105',
       haveRow: 'D',
@@ -369,6 +393,7 @@ async function main() {
   console.log('Notifications created')
 
   // Summary
+  const teamCount = await prisma.team.count()
   const userCount = await prisma.user.count()
   const listingCount = await prisma.listing.count()
   const conversationCount = await prisma.conversation.count()
@@ -378,6 +403,7 @@ async function main() {
 
   console.log('\n📊 Seed Summary:')
   console.log('================')
+  console.log(`🏆 Teams: ${teamCount}`)
   console.log(`👥 Users: ${userCount}`)
   console.log(`🎫 Listings: ${listingCount}`)
   console.log(`💬 Conversations: ${conversationCount}`)

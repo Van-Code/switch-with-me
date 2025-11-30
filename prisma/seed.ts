@@ -29,7 +29,7 @@ async function main() {
 
   const valkyries = await prisma.team.create({
     data: {
-      name: 'Seattle Valkyries',
+      name: 'Valkyries',
       slug: 'valkyries',
     },
   })

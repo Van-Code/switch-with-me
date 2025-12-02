@@ -75,18 +75,19 @@ export default async function ListingsPage({ searchParams }: ListingsPageProps) 
   if (from || to) {
     where.gameDate = {};
     if (from) {
-      const fromDate = new Date(from);
+      // Parse date string to avoid timezone issues
+      // Date input provides YYYY-MM-DD, parse it as local time
+      const [year, month, day] = from.split('-').map(Number);
+      const fromDate = new Date(year, month - 1, day, 0, 0, 0, 0);
       if (!isNaN(fromDate.getTime())) {
-        // Set to start of day
-        fromDate.setHours(0, 0, 0, 0);
         where.gameDate.gte = fromDate;
       }
     }
     if (to) {
-      const toDate = new Date(to);
+      // Parse date string to avoid timezone issues
+      const [year, month, day] = to.split('-').map(Number);
+      const toDate = new Date(year, month - 1, day, 23, 59, 59, 999);
       if (!isNaN(toDate.getTime())) {
-        // Set to end of day
-        toDate.setHours(23, 59, 59, 999);
         where.gameDate.lte = toDate;
       }
     }

@@ -1,426 +1,363 @@
-import { PrismaClient } from '@prisma/client'
-import bcrypt from 'bcryptjs'
+import { PrismaClient, NotificationType } from "@prisma/client"
 
 const prisma = new PrismaClient()
 
+// Config
+const NUM_USERS = 16
+const NUM_LISTINGS = 200
+const CONVERSATION_RATIO = 0.25 // ~25% of listings get a conversation
+
+// Helpers
+function randomItem<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)]
+}
+
+function randomInt(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
+function randomFloat(min: number, max: number, decimals = 2): number {
+  const v = Math.random() * (max - min) + min
+  return parseFloat(v.toFixed(decimals))
+}
+
+function randomFutureDateIn2025(): Date {
+  const start = new Date("2025-01-05").getTime()
+  const end = new Date("2025-05-30").getTime()
+  const ts = randomInt(start, end)
+  return new Date(ts)
+}
+
 async function main() {
-  console.log('Starting seed...')
+  console.log("Clearing existing data...")
 
-  // Clean up existing data (in development only!)
-  console.log('🧹 Cleaning up existing data...')
-  await prisma.notification.deleteMany()
-  await prisma.message.deleteMany()
-  await prisma.conversationParticipant.deleteMany()
-  await prisma.conversation.deleteMany()
-  await prisma.listing.deleteMany()
-  await prisma.profile.deleteMany()
-  await prisma.user.deleteMany()
-  await prisma.team.deleteMany()
-  console.log('✅ Cleanup complete')
+  // Clean up in reverse dependency order
+  await prisma.notification.deleteMany({})
+  await prisma.message.deleteMany({})
+  await prisma.conversationParticipant.deleteMany({})
+  await prisma.conversation.deleteMany({})
+  await prisma.listing.deleteMany({})
+  await prisma.profile.deleteMany({})
+  await prisma.account.deleteMany({})
+  await prisma.session.deleteMany({})
+  await prisma.team.deleteMany({})
+  await prisma.user.deleteMany({})
 
-  // Create teams
-  console.log('Creating teams...')
-  const bayfc = await prisma.team.create({
-    data: {
-      name: 'Bay FC',
-      slug: 'bayfc',
+  console.log("Seeding teams...")
+
+  const teamsData = [
+    {
+      name: "Golden State Valkyries",
+      slug: "valkyries",
+      logoUrl: "/images/valkyries.png",
+      primaryColor: "#6b00d7",
+      secondaryColor: "#f7f2ff"
     },
-  })
+    {
+      name: "Bay FC",
+      slug: "bay-fc",
+      logoUrl: "/images/bayfc.png",
+      primaryColor: "#d20000",
+      secondaryColor: "#ffe7e7"
+    }
+  ]
 
-  const valkyries = await prisma.team.create({
-    data: {
-      name: 'Valkyries',
-      slug: 'valkyries',
-    },
-  })
+  const teams: { [slug: string]: { id: number } } = {}
+  for (const t of teamsData) {
+    const created = await prisma.team.create({ data: t })
+    teams[created.slug] = { id: created.id }
+  }
 
-  console.log('Teams created')
+  console.log("Seeding users + profiles...")
 
-  // Create test users
-  const password = await bcrypt.hash('password123', 10)
+  // Base user data; we’ll pad to NUM_USERS
+  const baseUserEmails = [
+    "van.acxiom@gmail.com",
+    "this.props.gmail.com",
+    "maya.west@example.com",
+    "taylor.park@example.com",
+    "alex.rios@example.com",
+    "jamie.chen@example.com",
+    "devon.miles@example.com",
+    "sasha.lane@example.com",
+    "riley.knox@example.com",
+    "harper.gray@example.com",
+    "jordan.wu@example.com",
+    "casey.barnes@example.com",
+    "morgan.lee@example.com",
+    "rowan.kelly@example.com",
+    "blake.santos@example.com",
+    "quinn.dawson@example.com"
+  ].slice(0, NUM_USERS)
 
-  const user1 = await prisma.user.create({
-    data: {
-      email: 'alice@example.com',
-      password,
-      emailNotificationsEnabled: true, // Email notifications ON
-      profile: {
-        create: {
-          firstName: 'Alice',
-          lastInitial: 'J',
-          emailVerified: true,
-          phoneVerified: true,
-          seasonTicketHolderVerified: true,
-          successfulSwapsCount: 5,
-          bio: 'Love the Valkyries! Looking to swap for better seats.',
-          favoritePlayer: 'Kelsey Plum',
+  const favoritePlayers = [
+    "Kelsey Plum",
+    "Sabrina Ionescu",
+    "A'ja Wilson",
+    "Chelsea Gray",
+    "Breanna Stewart",
+    "Jewell Loyd",
+    "Candace Parker",
+    "Stephen Curry"
+  ]
+
+  const users = []
+  for (let i = 0; i < baseUserEmails.length; i++) {
+    const email = baseUserEmails[i]
+    const firstName = email.split("@")[0].split(".")[0] || `User${i + 1}`
+    const lastInitial = firstName.charAt(0).toUpperCase()
+
+    const user = await prisma.user.create({
+      data: {
+        email,
+        emailNotificationsEnabled: Math.random() < 0.7,
+        profile: {
+          create: {
+            firstName: firstName.charAt(0).toUpperCase() + firstName.slice(1),
+            lastInitial,
+            avatarUrl: null,
+            bio:
+              i === 0
+                ? "Queer Bay Area fan who loves W+ sports and good sightlines."
+                : "Loves live games, open to trying new sections.",
+            favoritePlayer: randomItem(favoritePlayers),
+            emailVerified: true,
+            phoneVerified: false,
+            seasonTicketHolderVerified: Math.random() < 0.2
+          }
+        }
+      }
+    })
+
+    users.push(user)
+  }
+
+  console.log(`Created ${users.length} users.`)
+
+  console.log(`Seeding ${NUM_LISTINGS} listings...`)
+
+  const zones = [
+    "Courtside",
+    "Lower Midcourt",
+    "Lower Sideline",
+    "Lower Corner",
+    "Lower End",
+    "Lower Bowl",
+    "Lower Baseline",
+    "Club Level",
+    "Upper Sideline",
+    "Upper Corner",
+    "Upper End"
+  ]
+
+  const sectionsValk = [
+    "101",
+    "102",
+    "103",
+    "104",
+    "105",
+    "106",
+    "107",
+    "108",
+    "109",
+    "110",
+    "111",
+    "112",
+    "113",
+    "114",
+    "115",
+    "116",
+    "117",
+    "118",
+    "119",
+    "120",
+    "121",
+    "122",
+    "123",
+    "124",
+    "125",
+    "126",
+    "127",
+    "128",
+    "129",
+    "130",
+    "131",
+    "132",
+    "133",
+    "134"
+  ]
+
+  const sectionsBayFC = [
+    "201",
+    "202",
+    "203",
+    "204",
+    "205",
+    "206",
+    "207",
+    "208",
+    "209",
+    "210",
+    "211",
+    "212",
+    "213",
+    "214",
+    "215",
+    "216",
+    "217",
+    "218",
+    "219",
+    "220",
+    "221",
+    "222",
+    "223",
+    "224"
+  ]
+
+  const listingsCreated = []
+
+  for (let i = 0; i < NUM_LISTINGS; i++) {
+    const user = randomItem(users)
+    const teamSlug = Math.random() < 0.6 ? "valkyries" : "bay-fc"
+    const teamId = teams[teamSlug].id
+    const isValk = teamSlug === "valkyries"
+
+    const haveSection = isValk ? randomItem(sectionsValk) : randomItem(sectionsBayFC)
+    const haveRow = String(randomInt(1, 25))
+    const haveSeat = String(randomInt(1, 20))
+    const haveZone = randomItem(zones)
+
+    const wantZones = [randomItem(zones), randomItem(zones)].filter(
+      (v, idx, arr) => arr.indexOf(v) === idx
+    ) // unique
+
+    const candidateSections = isValk ? sectionsValk : sectionsBayFC
+    const wantSections = [
+      randomItem(candidateSections),
+      randomItem(candidateSections)
+    ].filter((v, idx, arr) => arr.indexOf(v) === idx)
+
+    const faceValue = randomFloat(20, 220)
+    const gameDate = randomFutureDateIn2025()
+
+    const listing = await prisma.listing.create({
+      data: {
+        userId: user.id,
+        teamId,
+        gameDate,
+        gameId: null,
+        haveSection,
+        haveRow,
+        haveSeat,
+        haveZone,
+        faceValue,
+        wantZones,
+        wantSections,
+        willingToAddCash: Math.random() < 0.4
+        // status uses default ACTIVE
+      }
+    })
+
+    listingsCreated.push(listing)
+  }
+
+  console.log(`Created ${listingsCreated.length} listings.`)
+
+  console.log("Seeding conversations, messages, and notifications...")
+
+  const conversationsCreated = []
+
+  for (const listing of listingsCreated) {
+    if (Math.random() > CONVERSATION_RATIO) continue
+
+    // pick 2 distinct users: owner + another
+    const ownerId = listing.userId
+    const otherUsers = users.filter((u) => u.id !== ownerId)
+    if (otherUsers.length === 0) continue
+
+    const responder = randomItem(otherUsers)
+
+    const convo = await prisma.conversation.create({
+      data: {
+        listingId: listing.id,
+        participants: {
+          create: [{ userId: ownerId }, { userId: responder.id }]
         },
+        messages: {
+          create: [
+            {
+              senderId: responder.id,
+              text: `Hey! Is your seat in section ${listing.haveSection} still available for that game?`
+            },
+            {
+              senderId: ownerId,
+              text: `Hey! Yep, it's still available. What section are you in or what are you hoping to swap into?`
+            },
+            {
+              senderId: responder.id,
+              text: `I'm hoping for something closer to ${randomItem(
+                listing.wantZones.length ? listing.wantZones : zones
+              )}. Your listing looked like a good fit.`
+            }
+          ]
+        }
       },
-    },
-  })
+      include: {
+        participants: true,
+        messages: true
+      }
+    })
 
-  const user2 = await prisma.user.create({
-    data: {
-      email: 'bob@example.com',
-      password,
-      emailNotificationsEnabled: false, // Email notifications OFF
-      profile: {
-        create: {
-          firstName: 'Bob',
-          lastInitial: 'S',
-          emailVerified: true,
-          successfulSwapsCount: 2,
-          bio: 'Season ticket holder, flexible on swaps.',
-          favoritePlayer: 'A\'ja Wilson',
-        },
-      },
-    },
-  })
+    conversationsCreated.push(convo)
 
-  const user3 = await prisma.user.create({
-    data: {
-      email: 'carol@example.com',
-      password,
-      emailNotificationsEnabled: true, // Email notifications ON
-      profile: {
-        create: {
-          firstName: 'Carol',
-          lastInitial: 'M',
-          emailVerified: true,
-          phoneVerified: true,
-          successfulSwapsCount: 1,
-          favoritePlayer: 'Jackie Young',
-        },
-      },
-    },
-  })
+    // Notifications for new messages to each participant
+    const recipientIds = convo.participants.map((p) => p.userId)
 
-  console.log('Users created')
+    for (const msg of convo.messages) {
+      const receivers = recipientIds.filter((id) => id !== msg.senderId)
 
-  // Create test listings
-  const gameDate1 = new Date('2025-12-15T19:00:00')
-  const gameDate2 = new Date('2025-12-20T19:30:00')
+      for (const recipientId of receivers) {
+        await prisma.notification.create({
+          data: {
+            userId: recipientId,
+            type: NotificationType.MESSAGE,
+            data: {
+              conversationId: convo.id,
+              listingId: listing.id,
+              previewText: msg.text.slice(0, 120)
+            },
+            isRead: false
+          }
+        })
+      }
+    }
 
-  const listing1 = await prisma.listing.create({
-    data: {
-      userId: user1.id,
-      teamId: bayfc.id,
-      gameDate: gameDate1,
-      haveSection: '101',
-      haveRow: 'A',
-      haveSeat: '5',
-      haveZone: 'Lower Bowl Corner',
-      faceValue: 75.00,
-      wantZones: ['Lower Bowl Center', 'Club Seats'],
-      wantSections: ['105', '106', '107'],
-      willingToAddCash: true,
-      status: 'ACTIVE',
-    },
-  })
-
-  const listing2 = await prisma.listing.create({
-    data: {
-      userId: user2.id,
-      teamId: valkyries.id,
-      gameDate: gameDate1,
-      haveSection: '106',
-      haveRow: 'C',
-      haveSeat: '12',
-      haveZone: 'Lower Bowl Center',
-      faceValue: 95.00,
-      wantZones: ['Lower Bowl Corner', 'Upper Bowl'],
-      wantSections: ['101', '102', '201'],
-      willingToAddCash: false,
-      status: 'ACTIVE',
-    },
-  })
-
-  await prisma.listing.create({
-    data: {
-      userId: user3.id,
-      teamId: bayfc.id,
-      gameDate: gameDate1,
-      haveSection: '215',
-      haveRow: 'F',
-      haveSeat: '8',
-      haveZone: 'Upper Bowl',
-      faceValue: 45.00,
-      wantZones: ['Lower Bowl Corner'],
-      wantSections: ['101', '102', '103', '108'],
-      willingToAddCash: true,
-      status: 'ACTIVE',
-    },
-  })
-
-  await prisma.listing.create({
-    data: {
-      userId: user1.id,
-      teamId: valkyries.id,
-      gameDate: gameDate2,
-      haveSection: '103',
-      haveRow: 'B',
-      haveSeat: '15',
-      haveZone: 'Lower Bowl Corner',
-      faceValue: 80.00,
-      wantZones: ['Lower Bowl Center'],
-      wantSections: ['105', '106'],
-      willingToAddCash: true,
-      status: 'ACTIVE',
-    },
-  })
-
-  await prisma.listing.create({
-    data: {
-      userId: user2.id,
-      teamId: bayfc.id,
-      gameDate: gameDate2,
-      haveSection: '105',
-      haveRow: 'D',
-      haveSeat: '7',
-      haveZone: 'Lower Bowl Center',
-      faceValue: 100.00,
-      wantZones: ['Club Seats'],
-      wantSections: ['C1', 'C2', 'C3'],
-      willingToAddCash: true,
-      status: 'ACTIVE',
-    },
-  })
-
-  console.log('Listings created')
-
-  // Create conversations with multiple messages
-  const conversation1 = await prisma.conversation.create({
-    data: {
-      listingId: listing2.id,
-      participants: {
-        create: [
-          { userId: user1.id },
-          { userId: user2.id },
-        ],
-      },
-      messages: {
-        create: [
-          {
-            senderId: user1.id,
-            text: 'Hi! I saw your listing for Section 106. Would you be interested in swapping for my Section 101 seats?',
-            createdAt: new Date(Date.now() - 3600000 * 24 * 2), // 2 days ago
+    // Occasionally add a MATCH notification for the owner
+    if (Math.random() < 0.15) {
+      await prisma.notification.create({
+        data: {
+          userId: ownerId,
+          type: NotificationType.MATCH,
+          data: {
+            listingId: listing.id,
+            message: "You have a promising swap conversation for this listing."
           },
-          {
-            senderId: user2.id,
-            text: 'Hey Alice! Yes, I\'d definitely be interested. When were you thinking of doing the swap?',
-            createdAt: new Date(Date.now() - 3600000 * 24 * 2 + 3600000), // 2 days ago + 1 hour
-          },
-          {
-            senderId: user1.id,
-            text: 'Great! I was thinking for the December 15th game. Does that work for you?',
-            createdAt: new Date(Date.now() - 3600000 * 24 * 2 + 7200000), // 2 days ago + 2 hours
-          },
-          {
-            senderId: user2.id,
-            text: 'Perfect timing! That works for me. My seats are Row C which should give you a great view.',
-            createdAt: new Date(Date.now() - 3600000 * 24 + 3600000), // 1 day ago
-          },
-          {
-            senderId: user1.id,
-            text: 'Awesome! How should we coordinate the ticket transfer?',
-            createdAt: new Date(Date.now() - 3600000 * 12), // 12 hours ago
-          },
-        ],
-      },
-    },
-  })
+          isRead: false
+        }
+      })
+    }
+  }
 
-  const conversation2 = await prisma.conversation.create({
-    data: {
-      listingId: listing1.id,
-      participants: {
-        create: [
-          { userId: user2.id },
-          { userId: user3.id },
-        ],
-      },
-      messages: {
-        create: [
-          {
-            senderId: user3.id,
-            text: 'Hi Bob! I love your section 106 seats. Would you consider a swap plus cash?',
-            createdAt: new Date(Date.now() - 3600000 * 24 * 5), // 5 days ago
-          },
-          {
-            senderId: user2.id,
-            text: 'Hey Carol! Thanks for reaching out. What section are you in?',
-            createdAt: new Date(Date.now() - 3600000 * 24 * 5 + 1800000), // 5 days ago + 30 min
-          },
-          {
-            senderId: user3.id,
-            text: 'I\'m in section 215, upper bowl. I know it\'s not as good but I can add cash to make it fair.',
-            createdAt: new Date(Date.now() - 3600000 * 24 * 4), // 4 days ago
-          },
-        ],
-      },
-    },
-  })
+  console.log(
+    `Created ${conversationsCreated.length} conversations, messages, and notifications.`
+  )
 
-  const conversation3 = await prisma.conversation.create({
-    data: {
-      participants: {
-        create: [
-          { userId: user1.id },
-          { userId: user3.id },
-        ],
-      },
-      messages: {
-        create: [
-          {
-            senderId: user3.id,
-            text: 'Hi Alice! Quick question - how do you usually handle the ticket transfers on this platform?',
-            createdAt: new Date(Date.now() - 3600000 * 6), // 6 hours ago
-          },
-          {
-            senderId: user1.id,
-            text: 'Hey Carol! I usually use the Ticketmaster transfer feature. It\'s super easy and secure.',
-            createdAt: new Date(Date.now() - 3600000 * 4), // 4 hours ago
-          },
-          {
-            senderId: user3.id,
-            text: 'That makes sense. Thanks for the tip! I\'m still learning the ropes here.',
-            createdAt: new Date(Date.now() - 3600000 * 2), // 2 hours ago
-          },
-          {
-            senderId: user1.id,
-            text: 'No problem! Feel free to reach out if you have any other questions. We were all new once!',
-            createdAt: new Date(Date.now() - 3600000), // 1 hour ago
-          },
-        ],
-      },
-    },
-  })
-
-  console.log('Conversations created')
-
-  // Create sample notifications
-  console.log('Creating notifications...')
-
-  // Notification for user1 (Alice) - unread message from Bob
-  await prisma.notification.create({
-    data: {
-      userId: user1.id,
-      type: 'MESSAGE',
-      data: {
-        conversationId: conversation1.id,
-        senderName: 'Bob S',
-        preview: 'Perfect timing! That works for me. My seats are Row C which should give you a great view.',
-      },
-      isRead: false,
-      createdAt: new Date(Date.now() - 3600000 * 24), // 1 day ago
-    },
-  })
-
-  // Notification for user1 - match found (read)
-  await prisma.notification.create({
-    data: {
-      userId: user1.id,
-      type: 'MATCH',
-      data: {
-        listingId: listing1.id,
-        matchedListingId: listing2.id,
-        matchScore: 92,
-        description: 'Great news! We found someone with seats you want.',
-      },
-      isRead: true,
-      createdAt: new Date(Date.now() - 3600000 * 48), // 2 days ago
-    },
-  })
-
-  // Notification for user2 (Bob) - unread message from Alice
-  await prisma.notification.create({
-    data: {
-      userId: user2.id,
-      type: 'MESSAGE',
-      data: {
-        conversationId: conversation1.id,
-        senderName: 'Alice J',
-        preview: 'Awesome! How should we coordinate the ticket transfer?',
-      },
-      isRead: false,
-      createdAt: new Date(Date.now() - 3600000 * 12), // 12 hours ago
-    },
-  })
-
-  // Notification for user3 (Carol) - multiple notifications
-  await prisma.notification.create({
-    data: {
-      userId: user3.id,
-      type: 'MESSAGE',
-      data: {
-        conversationId: conversation3.id,
-        senderName: 'Alice J',
-        preview: 'No problem! Feel free to reach out if you have any other questions. We were all new once!',
-      },
-      isRead: false,
-      createdAt: new Date(Date.now() - 3600000), // 1 hour ago
-    },
-  })
-
-  await prisma.notification.create({
-    data: {
-      userId: user3.id,
-      type: 'MESSAGE',
-      data: {
-        conversationId: conversation3.id,
-        senderName: 'Alice J',
-        preview: 'Hey Carol! I usually use the Ticketmaster transfer feature. It\'s super easy and secure.',
-      },
-      isRead: true, // This one is read
-      createdAt: new Date(Date.now() - 3600000 * 4), // 4 hours ago
-    },
-  })
-
-  await prisma.notification.create({
-    data: {
-      userId: user3.id,
-      type: 'MATCH',
-      data: {
-        listingId: listing2.id,
-        matchScore: 85,
-        description: 'You have a new seat match suggestion!',
-      },
-      isRead: false,
-      createdAt: new Date(Date.now() - 3600000 * 8), // 8 hours ago
-    },
-  })
-
-  console.log('Notifications created')
-
-  // Summary
-  const teamCount = await prisma.team.count()
-  const userCount = await prisma.user.count()
-  const listingCount = await prisma.listing.count()
-  const conversationCount = await prisma.conversation.count()
-  const messageCount = await prisma.message.count()
-  const notificationCount = await prisma.notification.count()
-  const unreadCount = await prisma.notification.count({ where: { isRead: false } })
-
-  console.log('\n📊 Seed Summary:')
-  console.log('================')
-  console.log(`🏆 Teams: ${teamCount}`)
-  console.log(`👥 Users: ${userCount}`)
-  console.log(`🎫 Listings: ${listingCount}`)
-  console.log(`💬 Conversations: ${conversationCount}`)
-  console.log(`📨 Messages: ${messageCount}`)
-  console.log(`🔔 Notifications: ${notificationCount} (${unreadCount} unread)`)
-  console.log('\n🔐 Test Credentials:')
-  console.log('All users: password123')
-  console.log('- alice@example.com (email notifications: ON)')
-  console.log('- bob@example.com (email notifications: OFF)')
-  console.log('- carol@example.com (email notifications: ON)')
-
-  console.log('\n✨ Seed completed successfully!')
+  console.log("Done seeding.")
 }
 
 main()
   .catch((e) => {
-    console.error('Error during seed:', e)
+    console.error(e)
     process.exit(1)
   })
   .finally(async () => {

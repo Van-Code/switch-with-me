@@ -49,14 +49,14 @@ async function main() {
     {
       name: "Golden State Valkyries",
       slug: "valkyries",
-      logoUrl: "/images/valkyries.png",
+      logoUrl: "/images/teams/valkyries.jpeg",
       primaryColor: "#6b00d7",
       secondaryColor: "#f7f2ff"
     },
     {
       name: "Bay FC",
       slug: "bay-fc",
-      logoUrl: "/images/bayfc.png",
+      logoUrl: "/images/teams/bayfc.svg",
       primaryColor: "#d20000",
       secondaryColor: "#ffe7e7"
     }

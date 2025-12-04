@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { signIn } from "next-auth/react"
 import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -9,7 +9,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
+  CardDescription
 } from "@/components/ui/card"
 import {
   Dialog,
@@ -17,30 +17,30 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogTrigger
 } from "@/components/ui/dialog"
 import { PrismaClient } from "@prisma/client"
 
 const prisma = new PrismaClient()
 
-export default function SignInPage() {
-  const searchParams = useSearchParams()
+function SignInContent() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const searchParams = useSearchParams()
+
+  // Get callbackUrl from query params, default to /listings
+  const callbackUrl = searchParams.get("callbackUrl") || "/listings"
 
   const handleGoogleSignIn = async () => {
     setLoading(true)
     setError("") // Clear any existing errors
     try {
-      await signIn("google", { callbackUrl: "/listings" })
+      await signIn("google", { callbackUrl })
     } catch (error) {
       setError("An error occurred. Please try again.")
       setLoading(false)
     }
   }
-
-  // Check for sign-out success message
-  const signoutSuccess = searchParams.get("error") === "signout_success"
 
   return (
     <div className="max-w-md mx-auto mt-12 px-4">
@@ -52,13 +52,6 @@ export default function SignInPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Success message for sign-out */}
-          {signoutSuccess && (
-            <div className="bg-green-50 text-green-700 border border-green-200 px-4 py-3 rounded-lg text-sm mb-6">
-              You have been signed out successfully.
-            </div>
-          )}
-
           {/* Error message for OAuth failures */}
           {error && (
             <div className="bg-rose-50 text-rose-700 border border-rose-200 px-4 py-3 rounded-lg text-sm mb-6">
@@ -137,5 +130,24 @@ export default function SignInPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={
+      <div className="max-w-md mx-auto mt-12 px-4">
+        <Card className="border-slate-200 shadow-lg">
+          <CardHeader className="space-y-2">
+            <CardTitle className="text-3xl text-slate-900">Sign In</CardTitle>
+            <CardDescription className="text-slate-600">
+              Loading...
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    }>
+      <SignInContent />
+    </Suspense>
   )
 }

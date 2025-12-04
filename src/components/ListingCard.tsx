@@ -1,7 +1,7 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card"
 import { Button } from "./ui/button"
 import { Badge } from "./ui/badge"
-import { Calendar, MapPin, DollarSign } from "lucide-react"
+import { Calendar, MapPin, DollarSign, Sparkles } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 
@@ -17,6 +17,8 @@ interface ListingCardProps {
     wantZones: string[]
     wantSections: string[]
     status: string
+    boosted?: boolean
+    boostedAt?: Date | string | null
     team?: {
       id: number
       name: string
@@ -38,8 +40,17 @@ interface ListingCardProps {
 export function ListingCard({ listing, onMessage, isAuthenticated = false }: ListingCardProps) {
   const gameDate = new Date(listing.gameDate)
 
+  // Determine zone category for preview mode
+  const getZoneCategory = (zone: string): string => {
+    const zoneLower = zone.toLowerCase()
+    if (zoneLower.includes('lower') || zoneLower.includes('floor')) return 'Lower Bowl'
+    if (zoneLower.includes('upper')) return 'Upper Bowl'
+    if (zoneLower.includes('club') || zoneLower.includes('suite')) return 'Club/Suite'
+    return 'General Seating'
+  }
+
   return (
-    <Card>
+    <Card className={listing.boosted ? "border-2 border-amber-400 bg-gradient-to-br from-amber-50/50 to-transparent shadow-lg" : ""}>
       <CardHeader>
         {listing.team && (
           <div className="flex items-center gap-2 mb-3">
@@ -61,15 +72,31 @@ export function ListingCard({ listing, onMessage, isAuthenticated = false }: Lis
         <div className="flex items-start justify-between">
           <div>
             <CardTitle className="text-lg">
-              Section {listing.haveSection}, Row {listing.haveRow}
+              {isAuthenticated ? (
+                <>Section {listing.haveSection}, Row {listing.haveRow}</>
+              ) : (
+                <>{getZoneCategory(listing.haveZone)}</>
+              )}
             </CardTitle>
             <p className="text-sm text-muted-foreground">
-              Seat {listing.haveSeat} • {listing.haveZone}
+              {isAuthenticated ? (
+                <>Seat {listing.haveSeat} • {listing.haveZone}</>
+              ) : (
+                <>Sign in to see exact location</>
+              )}
             </p>
           </div>
-          <Badge variant={listing.status === "ACTIVE" ? "default" : "secondary"}>
-            {listing.status}
-          </Badge>
+          <div className="flex flex-col gap-1.5 items-end">
+            {listing.boosted && (
+              <Badge className="bg-amber-500 hover:bg-amber-600 text-white">
+                <Sparkles className="h-3 w-3 mr-1" />
+                Boosted
+              </Badge>
+            )}
+            <Badge variant={listing.status === "ACTIVE" ? "default" : "secondary"}>
+              {listing.status}
+            </Badge>
+          </div>
         </div>
       </CardHeader>
 

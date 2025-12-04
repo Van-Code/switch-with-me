@@ -10,7 +10,13 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { X, SlidersHorizontal, Calendar as CalendarIcon } from "lucide-react";
 import { useMask } from "@react-input/mask";
 import { useListingsFilters } from "@/contexts/listings-filters-context";
-import { TEAMS } from "@/config/teams";
+
+interface Team {
+  id: number
+  name: string
+  slug: string
+  logoUrl: string | null
+}
 
 // ISO YYYY-MM-DD -> MM/DD/YYYY
 function isoToDisplay(iso?: string | null): string {
@@ -64,6 +70,16 @@ export default function ListingsFilters() {
     applyFilters,
     activeFilters,
   } = useListingsFilters();
+
+  const [teams, setTeams] = useState<Team[]>([]);
+
+  // Get Teams
+  useEffect(() => {
+    fetch("/api/teams")
+      .then((res) => res.json())
+      .then((data) => setTeams(data.teams))
+      .catch((err) => console.error("Failed to fetch teams:", err))
+  }, [])
 
   // Raw text in inputs (MM/DD/YYYY)
   const [fromRaw, setFromRaw] = useState(() =>
@@ -196,7 +212,7 @@ export default function ListingsFilters() {
         <div className="space-y-2">
           <Label className="text-sm font-semibold text-slate-700">Teams</Label>
           <div className="space-y-2">
-            {TEAMS.map((team) => (
+            {teams.map((team) => (
               <div key={team.slug} className="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -287,12 +303,12 @@ export default function ListingsFilters() {
                 <Popover>
                   <PopoverTrigger
                     type="button"
-                    className="inline-flex items-center justify-center rounded-md border border-cyan-200 px-2 text-slate-600 hover:bg-cyan-50"
+                    className="inline-flex items-center justify-center rounded-md border border-cyan-200 px-2 text-slate-600 hover:bg-cyan-50 transition-colors"
                     aria-label="Open calendar to pick start date"
                   >
                     <CalendarIcon className="h-4 w-4" />
                   </PopoverTrigger>
-                  <PopoverContent className="p-0" align="start">
+                  <PopoverContent className="p-3 w-auto bg-white rounded-lg shadow-lg border border-slate-200" align="start">
                     <Calendar
                       mode="single"
                       selected={fromDateObj}
@@ -354,12 +370,12 @@ export default function ListingsFilters() {
                   <PopoverTrigger
                     type="button"
                     disabled={!filters.from}
-                    className="inline-flex items-center justify-center rounded-md border border-cyan-200 px-2 text-slate-600 hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex items-center justify-center rounded-md border border-cyan-200 px-2 text-slate-600 hover:bg-cyan-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     aria-label="Open calendar to pick end date"
                   >
                     <CalendarIcon className="h-4 w-4" />
                   </PopoverTrigger>
-                  <PopoverContent className="p-0" align="start">
+                  <PopoverContent className="p-3 w-auto bg-white rounded-lg shadow-lg border border-slate-200" align="start">
                     <Calendar
                       mode="single"
                       selected={toDateObj}

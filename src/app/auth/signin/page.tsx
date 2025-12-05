@@ -19,9 +19,6 @@ import {
   DialogTitle,
   DialogTrigger
 } from "@/components/ui/dialog"
-import { PrismaClient } from "@prisma/client"
-
-const prisma = new PrismaClient()
 
 function SignInContent() {
   const [loading, setLoading] = useState(false)

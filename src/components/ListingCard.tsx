@@ -153,9 +153,12 @@ export function ListingCard({ listing, onMessage, isAuthenticated = false }: Lis
       {listing.status === "ACTIVE" && (
         <CardFooter>
           {!isAuthenticated ? (
-            <Link href="/auth/signin" className="w-full">
+            <Link
+              href={`/auth/signin?callbackUrl=${encodeURIComponent(`/listings/message?listingId=${listing.id}`)}`}
+              className="w-full"
+            >
               <Button variant="outline" size="sm" className="w-full">
-                Sign in to contact
+                Sign in to Message
               </Button>
             </Link>
           ) : onMessage ? (

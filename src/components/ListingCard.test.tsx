@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { ListingCard } from './ListingCard';
 
 // Mock next/image
@@ -10,12 +11,11 @@ jest.mock('next/image', () => ({
   },
 }));
 
-// Mock next/link
-jest.mock('next/link', () => {
-  return ({ children, href }: any) => {
-    return <a href={href}>{children}</a>
-  }
-});
+// Mock next-auth/react
+const mockSignIn = jest.fn();
+jest.mock('next-auth/react', () => ({
+  signIn: (...args: any[]) => mockSignIn(...args),
+}));
 
 describe('ListingCard', () => {
   const mockListing = {
@@ -45,18 +45,25 @@ describe('ListingCard', () => {
     },
   };
 
+  beforeEach(() => {
+    mockSignIn.mockClear();
+  });
+
   describe('Unauthenticated User', () => {
-    it('shows sign-in button with correct callback URL', () => {
+    it('shows sign-in button and triggers direct OAuth on click', async () => {
+      const user = userEvent.setup();
       render(<ListingCard listing={mockListing} isAuthenticated={false} />);
 
-      const signInLink = screen.getByRole('link', { name: /sign in to message/i });
-      expect(signInLink).toBeInTheDocument();
+      const signInButton = screen.getByRole('button', { name: /sign in to message/i });
+      expect(signInButton).toBeInTheDocument();
 
-      // Check that the link contains the listing ID in the callbackUrl
-      const href = signInLink.getAttribute('href');
-      expect(href).toContain('callbackUrl');
-      expect(href).toContain(`listingId=${mockListing.id}`);
-      expect(href).toContain('/auth/signin');
+      // Click the button
+      await user.click(signInButton);
+
+      // Verify signIn was called with correct parameters
+      expect(mockSignIn).toHaveBeenCalledWith('google', {
+        callbackUrl: `/listings/message?listingId=${mockListing.id}`,
+      });
     });
 
     it('hides exact seat location for unauthenticated users', () => {
@@ -75,6 +82,24 @@ describe('ListingCard', () => {
 
       expect(screen.queryByText(/listed by/i)).not.toBeInTheDocument();
       expect(screen.queryByText(/john d\./i)).not.toBeInTheDocument();
+    });
+
+    it('disables button and shows loading state during sign-in', async () => {
+      const user = userEvent.setup();
+      mockSignIn.mockImplementation(() => new Promise(() => {})); // Never resolves
+
+      render(<ListingCard listing={mockListing} isAuthenticated={false} />);
+
+      const signInButton = screen.getByRole('button', { name: /sign in to message/i });
+      expect(signInButton).not.toBeDisabled();
+
+      // Click the button
+      await user.click(signInButton);
+
+      // Button should now be disabled and show loading text
+      const loadingButton = screen.getByRole('button', { name: /signing in\.\.\./i });
+      expect(loadingButton).toBeInTheDocument();
+      expect(loadingButton).toBeDisabled();
     });
   });
 

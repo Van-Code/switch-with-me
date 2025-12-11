@@ -21,9 +21,9 @@ function randomFloat(min: number, max: number, decimals = 2): number {
   return parseFloat(v.toFixed(decimals))
 }
 
-function randomFutureDateIn2025(): Date {
-  const start = new Date("2025-01-05").getTime()
-  const end = new Date("2025-05-30").getTime()
+function randomFutureDateIn2026(): Date {
+  const start = new Date("202-12-05").getTime()
+  const end = new Date("2026-05-30").getTime()
   const ts = randomInt(start, end)
   return new Date(ts)
 }
@@ -47,19 +47,19 @@ async function main() {
 
   const teamsData = [
     {
-      name: "Golden State Valkyries",
+      name: "Valkyries",
       slug: "valkyries",
       logoUrl: "/images/teams/valkyries.png",
       primaryColor: "#6b00d7",
-      secondaryColor: "#f7f2ff"
+      secondaryColor: "#f7f2ff",
     },
     {
       name: "Bay FC",
       slug: "bay-fc",
       logoUrl: "/images/teams/bayfc.svg",
       primaryColor: "#d20000",
-      secondaryColor: "#ffe7e7"
-    }
+      secondaryColor: "#ffe7e7",
+    },
   ]
 
   const teams: { [slug: string]: { id: number } } = {}
@@ -87,7 +87,7 @@ async function main() {
     "morgan.lee@example.com",
     "rowan.kelly@example.com",
     "blake.santos@example.com",
-    "quinn.dawson@example.com"
+    "quinn.dawson@example.com",
   ].slice(0, NUM_USERS)
 
   const favoritePlayers = [
@@ -98,7 +98,7 @@ async function main() {
     "Breanna Stewart",
     "Jewell Loyd",
     "Candace Parker",
-    "Stephen Curry"
+    "Stephen Curry",
   ]
 
   const users = []
@@ -123,10 +123,10 @@ async function main() {
             favoritePlayer: randomItem(favoritePlayers),
             emailVerified: true,
             phoneVerified: false,
-            seasonTicketHolderVerified: Math.random() < 0.2
-          }
-        }
-      }
+            seasonTicketHolderVerified: Math.random() < 0.2,
+          },
+        },
+      },
     })
 
     users.push(user)
@@ -147,7 +147,7 @@ async function main() {
     "Club Level",
     "Upper Sideline",
     "Upper Corner",
-    "Upper End"
+    "Upper End",
   ]
 
   const sectionsValk = [
@@ -184,7 +184,7 @@ async function main() {
     "131",
     "132",
     "133",
-    "134"
+    "134",
   ]
 
   const sectionsBayFC = [
@@ -211,7 +211,7 @@ async function main() {
     "221",
     "222",
     "223",
-    "224"
+    "224",
   ]
 
   const listingsCreated = []
@@ -234,11 +234,10 @@ async function main() {
     const candidateSections = isValk ? sectionsValk : sectionsBayFC
     const wantSections = [
       randomItem(candidateSections),
-      randomItem(candidateSections)
+      randomItem(candidateSections),
     ].filter((v, idx, arr) => arr.indexOf(v) === idx)
 
-    const faceValue = randomFloat(20, 220)
-    const gameDate = randomFutureDateIn2025()
+    const gameDate = randomFutureDateIn2026()
 
     const listing = await prisma.listing.create({
       data: {
@@ -250,12 +249,11 @@ async function main() {
         haveRow,
         haveSeat,
         haveZone,
-        faceValue,
         wantZones,
         wantSections,
-        willingToAddCash: Math.random() < 0.4
+        willingToAddCash: Math.random() < 0.4,
         // status uses default ACTIVE
-      }
+      },
     })
 
     listingsCreated.push(listing)
@@ -281,31 +279,31 @@ async function main() {
       data: {
         listingId: listing.id,
         participants: {
-          create: [{ userId: ownerId }, { userId: responder.id }]
+          create: [{ userId: ownerId }, { userId: responder.id }],
         },
         messages: {
           create: [
             {
               senderId: responder.id,
-              text: `Hey! Is your seat in section ${listing.haveSection} still available for that game?`
+              text: `Hey! Is your seat in section ${listing.haveSection} still available for that game?`,
             },
             {
               senderId: ownerId,
-              text: `Hey! Yep, it's still available. What section are you in or what are you hoping to swap into?`
+              text: `Hey! Yep, it's still available. What section are you in or what are you hoping to swap into?`,
             },
             {
               senderId: responder.id,
               text: `I'm hoping for something closer to ${randomItem(
                 listing.wantZones.length ? listing.wantZones : zones
-              )}. Your listing looked like a good fit.`
-            }
-          ]
-        }
+              )}. Your listing looked like a good fit.`,
+            },
+          ],
+        },
       },
       include: {
         participants: true,
-        messages: true
-      }
+        messages: true,
+      },
     })
 
     conversationsCreated.push(convo)
@@ -324,10 +322,10 @@ async function main() {
             data: {
               conversationId: convo.id,
               listingId: listing.id,
-              previewText: msg.text.slice(0, 120)
+              previewText: msg.text.slice(0, 120),
             },
-            isRead: false
-          }
+            isRead: false,
+          },
         })
       }
     }
@@ -340,10 +338,10 @@ async function main() {
           type: NotificationType.MATCH,
           data: {
             listingId: listing.id,
-            message: "You have a promising swap conversation for this listing."
+            message: "You have a promising swap conversation for this listing.",
           },
-          isRead: false
-        }
+          isRead: false,
+        },
       })
     }
   }
@@ -357,7 +355,7 @@ async function main() {
 
 main()
   .catch((e) => {
-    console.error('Error during seed:', e)
+    console.error("Error during seed:", e)
     process.exit(1)
   })
   .finally(async () => {

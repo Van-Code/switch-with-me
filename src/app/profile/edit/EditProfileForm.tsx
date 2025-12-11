@@ -10,6 +10,14 @@ import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Upload, Trash2 } from "lucide-react"
 import { useAvatarUrl } from "@/hooks/useAvatarUrl"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 interface EditProfileFormProps {
   profile: {
@@ -34,6 +42,7 @@ export function EditProfileForm({ profile }: EditProfileFormProps) {
   })
   const [avatarKey, setAvatarKey] = useState(profile.avatarUrl)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const currentAvatarUrl = useAvatarUrl(avatarKey)
 
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -121,10 +130,6 @@ export function EditProfileForm({ profile }: EditProfileFormProps) {
   const handleDeletePhoto = async () => {
     if (!avatarKey) return
 
-    if (!confirm("Are you sure you want to delete your profile photo?")) {
-      return
-    }
-
     setDeleting(true)
 
     try {
@@ -140,6 +145,7 @@ export function EditProfileForm({ profile }: EditProfileFormProps) {
 
       setAvatarKey(null)
       setPreviewUrl(null)
+      setShowDeleteDialog(false)
       router.refresh()
     } catch (error) {
       console.error("Error deleting photo:", error)
@@ -203,11 +209,11 @@ export function EditProfileForm({ profile }: EditProfileFormProps) {
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={handleDeletePhoto}
+                    onClick={() => setShowDeleteDialog(true)}
                     disabled={deleting}
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
-                    {deleting ? "Deleting..." : "Delete"}
+                    Delete
                   </Button>
                 )}
               </div>
@@ -296,6 +302,34 @@ export function EditProfileForm({ profile }: EditProfileFormProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Delete Photo Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Profile Photo</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete your profile photo? Your avatar will revert to your first initial.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(false)}
+              disabled={deleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeletePhoto}
+              disabled={deleting}
+            >
+              {deleting ? "Deleting..." : "Delete Photo"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </form>
   )
 }

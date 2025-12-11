@@ -357,7 +357,7 @@ async function main() {
 
 main()
   .catch((e) => {
-    console.error(e)
+    console.error('Error during seed:', e)
     process.exit(1)
   })
   .finally(async () => {

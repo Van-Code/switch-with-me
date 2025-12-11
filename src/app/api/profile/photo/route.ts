@@ -2,31 +2,38 @@ import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { writeFile, mkdir } from "fs/promises"
-import path from "path"
+import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3"
+import { Readable } from "stream" //
 
 // Force dynamic rendering - this route needs to access headers for authentication
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic"
+
+const AWS_REGION = process.env.AWS_REGION as string
+const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID as string
+const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY as string
+const AWS_BUCKET_NAME = process.env.AWS_BUCKET_NAME as string
+
+const client = new S3Client({
+  region: AWS_REGION,
+  credentials: {
+    accessKeyId: AWS_ACCESS_KEY_ID,
+    secretAccessKey: AWS_SECRET_ACCESS_KEY,
+  },
+})
 
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions)
-    
+
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const formData = await req.formData()
     const file = formData.get("photo") as File | null
 
     if (!file) {
-      return NextResponse.json(
-        { error: "No file uploaded" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "No file uploaded" }, { status: 400 })
     }
 
     // Validate file type
@@ -47,43 +54,38 @@ export async function POST(req: Request) {
       )
     }
 
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-
     // Generate unique filename
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`
     const fileExtension = file.name.split(".").pop()
     const filename = `${session.user.id}-${uniqueSuffix}.${fileExtension}`
-
-    // Ensure uploads directory exists
-    const uploadsDir = path.join(process.cwd(), "public", "uploads")
-    try {
-      await mkdir(uploadsDir, { recursive: true })
-    } catch (error) {
-      // Directory might already exist
+    if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY || !AWS_BUCKET_NAME) {
+      return new Response(null, { status: 500 })
     }
 
     // Save file
-    const filepath = path.join(uploadsDir, filename)
-    await writeFile(filepath, buffer)
+    const command = new PutObjectCommand({
+      Bucket: AWS_BUCKET_NAME,
+      Key: filename,
+      ContentType: file.type,
+    })
 
+    const data = await client.send(command)
+    console.log("Successfully uploaded to s3: ", data)
     // Update user profile with photo URL
-    const photoUrl = `/uploads/${filename}`
+    const photoUrl = filename
     await prisma.profile.update({
       where: { userId: session.user.id },
       data: { avatarUrl: photoUrl },
     })
+    console.log("Successfully saved filename to db", photoUrl)
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
-      photoUrl 
+      photoUrl,
     })
   } catch (error) {
     console.error("Error uploading photo:", error)
-    return NextResponse.json(
-      { error: "Failed to upload photo" },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: "Failed to upload photo" }, { status: 500 })
   }
 }
 

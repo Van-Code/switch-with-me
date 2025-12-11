@@ -22,10 +22,13 @@ function randomFloat(min: number, max: number, decimals = 2): number {
 }
 
 function randomFutureDateIn2026(): Date {
-  const start = new Date("202-12-05").getTime()
-  const end = new Date("2026-05-30").getTime()
+  const start = new Date("2026-12-05T12:00:00.000Z").getTime()
+  const end = new Date("2026-05-30T12:00:00.000Z").getTime()
   const ts = randomInt(start, end)
-  return new Date(ts)
+  const date = new Date(ts)
+  // Set to noon UTC to avoid timezone issues
+  date.setUTCHours(12, 0, 0, 0)
+  return date
 }
 
 async function main() {
@@ -222,11 +225,18 @@ async function main() {
     const teamId = teams[teamSlug].id
     const isValk = teamSlug === "valkyries"
 
-    const haveSection = isValk ? randomItem(sectionsValk) : randomItem(sectionsBayFC)
-    const haveRow = String(randomInt(1, 25))
-    const haveSeat = String(randomInt(1, 20))
-    const haveZone = randomItem(zones)
+    // ~30% of listings are WANT listings
+    const isWantListing = Math.random() < 0.3
+    const listingType = isWantListing ? "WANT" : "HAVE"
 
+    // For HAVE listings, generate actual seat details
+    // For WANT listings, use placeholder values since they don't have tickets yet
+    const haveSection = isWantListing ? "" : (isValk ? randomItem(sectionsValk) : randomItem(sectionsBayFC))
+    const haveRow = isWantListing ? "" : String(randomInt(1, 25))
+    const haveSeat = isWantListing ? "" : String(randomInt(1, 20))
+    const haveZone = isWantListing ? "" : randomItem(zones)
+
+    // Generate want preferences for both types
     const wantZones = [randomItem(zones), randomItem(zones)].filter(
       (v, idx, arr) => arr.indexOf(v) === idx
     ) // unique
@@ -245,6 +255,7 @@ async function main() {
         teamId,
         gameDate,
         gameId: null,
+        listingType,
         haveSection,
         haveRow,
         haveSeat,

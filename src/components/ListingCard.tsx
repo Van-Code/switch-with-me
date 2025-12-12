@@ -7,7 +7,7 @@ import { Badge } from "./ui/badge"
 import { Calendar, Sparkles } from "lucide-react"
 import { signIn } from "next-auth/react"
 import Image from "next/image"
-import { isBoostEnabled, isShowListingActiveStatusEnabled } from "@/lib/features"
+import { isBoostEnabled } from "@/lib/features"
 
 interface ListingCardProps {
   listing: {
@@ -42,29 +42,17 @@ interface ListingCardProps {
 }
 
 export function ListingCard({ listing, onMessage, isAuthenticated = false }: ListingCardProps) {
-  const [isSigningIn, setIsSigningIn] = useState(false)
+  const [isSigningIn] = useState(false)
   const gameDate = new Date(listing.gameDate)
-
-  // Format date to avoid timezone issues - use UTC methods to display the date as-is
-  const formatGameDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", {
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      timeZone: "UTC" // Force UTC to prevent timezone shifts
-    })
-  }
+  const isHaveListing = (listing.listingType || "HAVE") === "HAVE"
 
   const handleSignInToMessage = async () => {
-    setIsSigningIn(true)
     try {
       await signIn("google", {
         callbackUrl: `/listings/message?listingId=${listing.id}`,
       })
     } catch (error) {
       console.error("Sign in error:", error)
-      setIsSigningIn(false)
     }
   }
 
@@ -95,43 +83,32 @@ export function ListingCard({ listing, onMessage, isAuthenticated = false }: Lis
             <span className="text-sm font-semibold text-slate-700">
               {listing.team.name}
             </span>
-            {listing.listingType && (
-              <Badge
-                variant={listing.listingType === "HAVE" ? "default" : "outline"}
-                className={listing.listingType === "HAVE" ? "bg-green-600 hover:bg-green-700" : "border-blue-600 text-blue-600"}
-              >
-                {listing.listingType === "HAVE" ? "Has tickets" : "Wants tickets"}
-              </Badge>
-            )}
           </div>
         )}
         <div className="flex items-start justify-between">
           <div>
-            {listing.listingType === "HAVE" ? (
-              <>
-                <CardTitle className="text-lg">
-                  {isAuthenticated ? (
-                    <>Section {listing.haveSection}, Row {listing.haveRow}</>
-                  ) : (
-                    <>{getZoneCategory(listing.haveZone)}</>
-                  )}
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  {isAuthenticated ? (
-                    <>Seat {listing.haveSeat} • {listing.haveZone}</>
-                  ) : (
-                    <>Sign in to see exact location</>
-                  )}
-                </p>
-              </>
-            ) : (
-              <>
-                <CardTitle className="text-lg">Looking for tickets</CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  {listing.wantZones.length > 0 ? listing.wantZones.join(", ") : "Any zone"}
-                </p>
-              </>
-            )}
+            <CardTitle className="text-lg">
+              {isHaveListing ? (
+                isAuthenticated ? (
+                  <>Section {listing.haveSection}, Row {listing.haveRow}</>
+                ) : (
+                  <>{getZoneCategory(listing.haveZone)}</>
+                )
+              ) : (
+                <>Looking for tickets</>
+              )}
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {isHaveListing ? (
+                isAuthenticated ? (
+                  <>Seat {listing.haveSeat} • {listing.haveZone}</>
+                ) : (
+                  <>Sign in to see exact location</>
+                )
+              ) : (
+                <>This person wants tickets for this game</>
+              )}
+            </p>
           </div>
           <div className="flex flex-col gap-1.5 items-end">
             {isBoostEnabled() && listing.boosted && (
@@ -140,11 +117,9 @@ export function ListingCard({ listing, onMessage, isAuthenticated = false }: Lis
                 Boosted
               </Badge>
             )}
-            {isShowListingActiveStatusEnabled() && (
-              <Badge variant={listing.status === "ACTIVE" ? "default" : "secondary"}>
-                {listing.status}
-              </Badge>
-            )}
+            <Badge variant={listing.status === "ACTIVE" ? "default" : "secondary"}>
+              {listing.status}
+            </Badge>
           </div>
         </div>
       </CardHeader>
@@ -152,11 +127,17 @@ export function ListingCard({ listing, onMessage, isAuthenticated = false }: Lis
       <CardContent className="space-y-3">
         <div className="flex items-center gap-2 text-sm">
           <Calendar className="h-4 w-4 text-muted-foreground" />
-          <span>{formatGameDate(gameDate)}</span>
+          <span>{gameDate.toLocaleDateString("en-US", {
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            timeZone: "UTC"
+          })}</span>
         </div>
 
         <div className="space-y-1">
-          <p className="text-sm font-medium">{listing.listingType === "HAVE" ? "Wants:" : "Interested in:"}</p>
+          <p className="text-sm font-medium">{isHaveListing ? "Wants:" : "Looking for:"}</p>
           <div className="flex flex-wrap gap-1">
             {listing.wantZones.length > 0 ? (
               listing.wantZones.map((zone, i) => (

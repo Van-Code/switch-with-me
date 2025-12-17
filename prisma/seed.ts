@@ -1,6 +1,8 @@
-import { PrismaClient, NotificationType } from "@prisma/client"
+import { PrismaClient, NotificationType } from "./generated/client"
+import { PrismaPg } from "@prisma/adapter-pg"
 
-const prisma = new PrismaClient()
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
+const prisma = new PrismaClient({ adapter })
 
 // Config
 const NUM_USERS = 16
@@ -231,7 +233,11 @@ async function main() {
 
     // For HAVE listings, generate actual seat details
     // For WANT listings, use placeholder values since they don't have tickets yet
-    const haveSection = isWantListing ? "" : (isValk ? randomItem(sectionsValk) : randomItem(sectionsBayFC))
+    const haveSection = isWantListing
+      ? ""
+      : isValk
+        ? randomItem(sectionsValk)
+        : randomItem(sectionsBayFC)
     const haveRow = isWantListing ? "" : String(randomInt(1, 25))
     const haveSeat = isWantListing ? "" : String(randomInt(1, 20))
     const haveZone = isWantListing ? "" : randomItem(zones)

@@ -95,17 +95,6 @@ async function main() {
     "quinn.dawson@example.com",
   ].slice(0, NUM_USERS)
 
-  const favoritePlayers = [
-    "Kelsey Plum",
-    "Sabrina Ionescu",
-    "A'ja Wilson",
-    "Chelsea Gray",
-    "Breanna Stewart",
-    "Jewell Loyd",
-    "Candace Parker",
-    "Stephen Curry",
-  ]
-
   const users = []
   for (let i = 0; i < baseUserEmails.length; i++) {
     const email = baseUserEmails[i]
@@ -121,11 +110,6 @@ async function main() {
             firstName: firstName.charAt(0).toUpperCase() + firstName.slice(1),
             lastInitial,
             avatarUrl: null,
-            bio:
-              i === 0
-                ? "Queer Bay Area fan who loves W+ sports and good sightlines."
-                : "Loves live games, open to trying new sections.",
-            favoritePlayer: randomItem(favoritePlayers),
             emailVerified: true,
             phoneVerified: false,
             seasonTicketHolderVerified: Math.random() < 0.2,

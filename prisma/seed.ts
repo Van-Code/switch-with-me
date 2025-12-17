@@ -1,7 +1,7 @@
-import { PrismaClient, NotificationType } from "./generated/client"
 import { PrismaPg } from "@prisma/adapter-pg"
-
+import { PrismaClient, NotificationType } from "@prisma/client"
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
+
 const prisma = new PrismaClient({ adapter })
 
 // Config
@@ -355,10 +355,11 @@ async function main() {
 }
 
 main()
-  .catch((e) => {
-    console.error("Error during seed:", e)
-    process.exit(1)
-  })
-  .finally(async () => {
+  .then(async () => {
     await prisma.$disconnect()
+  })
+  .catch(async (e) => {
+    console.error(e)
+    await prisma.$disconnect()
+    process.exit(1)
   })

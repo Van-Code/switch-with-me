@@ -5,8 +5,8 @@ const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
 const prisma = new PrismaClient({ adapter })
 
 // Config
-const NUM_USERS = 16
-const NUM_LISTINGS = 200
+const NUM_USERS = 5
+const NUM_LISTINGS = 40
 const CONVERSATION_RATIO = 0.25 // ~25% of listings get a conversation
 
 // Helpers
@@ -78,21 +78,23 @@ async function main() {
   // Base user data; we’ll pad to NUM_USERS
   const baseUserEmails = [
     "van.acxiom@gmail.com",
-    "this.props.gmail.com",
+    "bon.saitrees@gmail.com",
+    "this.props@gmail.com",
+    "wolf.andreedconsulting@gmail.com",
     "maya.west@example.com",
-    "taylor.park@example.com",
-    "alex.rios@example.com",
-    "jamie.chen@example.com",
-    "devon.miles@example.com",
-    "sasha.lane@example.com",
-    "riley.knox@example.com",
-    "harper.gray@example.com",
-    "jordan.wu@example.com",
-    "casey.barnes@example.com",
-    "morgan.lee@example.com",
-    "rowan.kelly@example.com",
-    "blake.santos@example.com",
-    "quinn.dawson@example.com",
+    // "taylor.park@example.com",
+    // "alex.rios@example.com",
+    // "jamie.chen@example.com",
+    // "devon.miles@example.com",
+    // "sasha.lane@example.com",
+    // "riley.knox@example.com",
+    // "harper.gray@example.com",
+    // "jordan.wu@example.com",
+    // "casey.barnes@example.com",
+    // "morgan.lee@example.com",
+    // "rowan.kelly@example.com",
+    // "blake.santos@example.com",
+    // "quinn.dawson@example.com",
   ].slice(0, NUM_USERS)
 
   const users = []
@@ -104,7 +106,7 @@ async function main() {
     const user = await prisma.user.create({
       data: {
         email,
-        emailNotificationsEnabled: Math.random() < 0.7,
+        emailNotificationsEnabled: false,
         profile: {
           create: {
             firstName: firstName.charAt(0).toUpperCase() + firstName.slice(1),
@@ -112,7 +114,7 @@ async function main() {
             avatarUrl: null,
             emailVerified: true,
             phoneVerified: false,
-            seasonTicketHolderVerified: Math.random() < 0.2,
+            seasonTicketHolderVerified: false,
           },
         },
       },

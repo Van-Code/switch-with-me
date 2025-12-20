@@ -32,6 +32,11 @@ function randomFutureDateIn2026(): Date {
   date.setUTCHours(12, 0, 0, 0)
   return date
 }
+function generateRandomLetterAS() {
+  const characters = "abcdefghijklmnopqprs"
+  const randomIndex = Math.floor(Math.random() * characters.length)
+  return characters[randomIndex].toUpperCase()
+}
 
 async function main() {
   console.log("Clearing existing data...")
@@ -224,7 +229,7 @@ async function main() {
       : isValk
         ? randomItem(sectionsValk)
         : randomItem(sectionsBayFC)
-    const haveRow = isWantListing ? "" : String(randomInt(1, 25))
+    const haveRow = isWantListing ? "" : generateRandomLetterAS()
     const haveSeat = isWantListing ? "" : String(randomInt(1, 20))
     const haveZone = isWantListing ? "" : randomItem(zones)
 

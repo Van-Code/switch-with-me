@@ -80,7 +80,7 @@ async function main() {
 
   console.log("Seeding users + profiles...")
 
-  // Base user data; we’ll pad to NUM_USERS
+  // Base user data; we'll pad to NUM_USERS
   const baseUserEmails = [
     "van.acxiom@gmail.com",
     "bon.saitrees@gmail.com",
@@ -233,16 +233,45 @@ async function main() {
     const haveSeat = isWantListing ? "" : String(randomInt(1, 20))
     const haveZone = isWantListing ? "" : randomItem(zones)
 
-    // Generate want preferences for both types
-    const wantZones = [randomItem(zones), randomItem(zones)].filter(
-      (v, idx, arr) => arr.indexOf(v) === idx
-    ) // unique
+    // Generate want preferences
+    // For HAVE listings: 50% have wants (Swap), 50% have no wants (For Sale)
+    // For WANT listings: always have wants
+    const shouldHaveWants = isWantListing ? true : Math.random() < 0.5
+
+    const wantZones = shouldHaveWants
+      ? [randomItem(zones), randomItem(zones)].filter(
+          (v, idx, arr) => arr.indexOf(v) === idx
+        ) // unique
+      : []
 
     const candidateSections = isValk ? sectionsValk : sectionsBayFC
-    const wantSections = [
-      randomItem(candidateSections),
-      randomItem(candidateSections),
-    ].filter((v, idx, arr) => arr.indexOf(v) === idx)
+    const wantSections = shouldHaveWants
+      ? [randomItem(candidateSections), randomItem(candidateSections)].filter(
+          (v, idx, arr) => arr.indexOf(v) === idx
+        )
+      : []
+
+    // Determine if this is a "For Sale" listing (has tickets but no wants)
+    const isForSale = listingType === "HAVE" && wantZones.length === 0
+
+    // priceCents: For Sale listings get a price, Swap listings may optionally have price
+    let priceCents: number | null = null
+    if (isForSale) {
+      // For Sale listings: always have a price
+      // Generate realistic ticket prices: $20-$200
+      const priceInDollars = randomInt(20, 200)
+      priceCents = priceInDollars * 100
+    } else if (listingType === "HAVE" && Math.random() < 0.3) {
+      // Some Swap listings (30%) also have a price
+      const priceInDollars = randomInt(25, 150)
+      priceCents = priceInDollars * 100
+    }
+
+    // seatCount: Random from 1-4
+    const seatCount = randomInt(1, 4)
+
+    // flexible: ~30% of listings are flexible
+    const flexible = Math.random() < 0.3
 
     const gameDate = randomFutureDateIn2026()
 
@@ -260,6 +289,9 @@ async function main() {
         wantZones,
         wantSections,
         willingToAddCash: Math.random() < 0.4,
+        priceCents,
+        seatCount,
+        flexible,
         // status uses default ACTIVE
       },
     })
@@ -268,6 +300,19 @@ async function main() {
   }
 
   console.log(`Created ${listingsCreated.length} listings.`)
+  console.log(
+    `  - ${listingsCreated.filter((l) => l.listingType === "HAVE" && l.wantZones.length > 0).length} Swap listings (has tickets + wants)`
+  )
+  console.log(
+    `  - ${listingsCreated.filter((l) => l.listingType === "HAVE" && l.wantZones.length === 0).length} For Sale listings (has tickets, no wants)`
+  )
+  console.log(
+    `  - ${listingsCreated.filter((l) => l.listingType === "WANT").length} Looking For listings (wants only)`
+  )
+  console.log(
+    `  - ${listingsCreated.filter((l) => l.priceCents !== null).length} with prices set`
+  )
+  console.log(`  - ${listingsCreated.filter((l) => l.flexible).length} marked as flexible`)
 
   console.log("Seeding conversations, messages, and notifications...")
 

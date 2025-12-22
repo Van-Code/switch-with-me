@@ -83,9 +83,9 @@ async function main() {
   // Base user data; we'll pad to NUM_USERS
   const baseUserEmails = [
     "van.acxiom@gmail.com",
-    "bon.saitrees@gmail.com",
+    "bonsaitrees@gmail.com",
     "this.props@gmail.com",
-    "wolf.andreedconsulting@gmail.com",
+    "wolfandreedconsulting@gmail.com",
     "maya.west@example.com",
     // "taylor.park@example.com",
     // "alex.rios@example.com",
@@ -312,7 +312,9 @@ async function main() {
   console.log(
     `  - ${listingsCreated.filter((l) => l.priceCents !== null).length} with prices set`
   )
-  console.log(`  - ${listingsCreated.filter((l) => l.flexible).length} marked as flexible`)
+  console.log(
+    `  - ${listingsCreated.filter((l) => l.flexible).length} marked as flexible`
+  )
 
   console.log("Seeding conversations, messages, and notifications...")
 

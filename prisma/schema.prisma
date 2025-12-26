@@ -100,6 +100,9 @@ model Profile {
   seasonTicketHolderVerified Boolean @default(false)
   successfulSwapsCount       Int     @default(0)
 
+  // Community Spotlight opt-in
+  showInCommunitySpotlight Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

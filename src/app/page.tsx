@@ -7,6 +7,7 @@ import { Shield, MessageSquare, Search, Heart } from "lucide-react"
 import AccountDeletedMessage from "@/components/AccountDeletedMessage"
 import Image from "next/image"
 import HomeHeroText from "@/components/HomeHeroText"
+import { CommunitySpotlight } from "@/components/CommunitySpotlight"
 
 export default async function Home() {
   const session = await auth()
@@ -136,6 +137,9 @@ export default async function Home() {
           </li>
         </ol>
       </section>
+
+      {/* Community Spotlight */}
+      <CommunitySpotlight limit={12} showViewMore={true} />
 
       {/* Support Card */}
       <section className="max-w-xl mx-auto">
